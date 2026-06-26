@@ -2836,7 +2836,7 @@
         try {
           const clean = num.replace(/[^0-9]/g, "");
           // 🔗 Bot server URL — replace with your Heroku/Railway/Render URL
-          const BOT_URL = "https://YOUR-BOT-URL.herokuapp.com";
+          const BOT_URL = "https://dark-maliya-4c3a09685982.herokuapp.com";
           const res = await axios(`${BOT_URL}/api/pair?number=${clean}`);
           pairCode = res.data && res.data.code ? res.data.code : "Unavailable";
           result.innerHTML = `<span class="result-code">${pairCode}</span>`;
