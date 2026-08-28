@@ -1,1 +1,504 @@
 
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MALIYA-MD — Bot Settings</title>
+  <link rel="icon" type="image/png" href="https://maliya-md.vercel.app/logo.png" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    :root {
+      --bg: #050d1a;
+      --bg2: #071428;
+      --card: rgba(10, 25, 50, 0.85);
+      --border: rgba(0, 180, 255, 0.18);
+      --accent: #00b4ff;
+      --accent2: #0066ff;
+      --accent3: #00ffd5;
+      --text: #e8f4ff;
+      --muted: rgba(150, 200, 255, 0.6);
+      --danger: #ff3366;
+      --success: #00ffd5;
+      --glow: 0 0 20px rgba(0, 180, 255, 0.35);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image: linear-gradient(rgba(0,100,255,0.04) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(0,100,255,0.04) 1px, transparent 1px);
+      background-size: 50px 50px;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .main-container {
+      max-width: 700px;
+      width: 100%;
+      position: relative;
+      z-index: 1;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .header .logo {
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      color: #fff;
+    }
+    .header .logo span { color: var(--accent); }
+    .header p {
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 6px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 0 60px rgba(0,100,255,0.12), 0 20px 60px rgba(0,0,0,0.4);
+    }
+    .card-header {
+      background: linear-gradient(135deg, rgba(0,50,120,0.6), rgba(0,20,60,0.8));
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .card-header .icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      background: rgba(0,180,255,0.12);
+      border: 1px solid rgba(0,180,255,0.25);
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      color: var(--accent);
+    }
+    .card-header h2 { font-size: 18px; font-weight: 900; }
+    .card-header p { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .card-body { padding: 24px; }
+    .input-field {
+      width: 100%;
+      padding: 13px 16px;
+      border-radius: 12px;
+      border: 1px solid rgba(0,180,255,0.2);
+      background: rgba(0,20,50,0.7);
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.25s;
+    }
+    .input-field:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,180,255,0.12); }
+    .action-btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--accent2), var(--accent));
+      box-shadow: 0 4px 18px rgba(0,180,255,0.3);
+      transition: all 0.2s;
+    }
+    .action-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,180,255,0.45); }
+    .action-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+    .flex-row { display: flex; gap: 10px; margin-bottom: 14px; }
+    .flex-row .input-field { flex: 1; margin-bottom: 0; }
+    .flex-row .action-btn { width: auto; padding: 13px 20px; white-space: nowrap; }
+    .settings-group {
+      background: rgba(0,20,50,0.4);
+      border: 1px solid rgba(0,180,255,0.1);
+      border-radius: 12px;
+      padding: 16px 18px;
+      margin-top: 16px;
+    }
+    .settings-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.5);
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+    .toggle-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.7);
+      cursor: pointer;
+      padding: 6px 10px;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+    .toggle-label:hover { background: rgba(0,180,255,0.06); }
+    .toggle-label input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer; }
+    .image-upload-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(0,180,255,0.06);
+      flex-wrap: wrap;
+    }
+    .image-upload-row:last-child { border-bottom: none; }
+    .image-upload-row input[type="file"] { font-size: 12px; color: rgba(255,255,255,0.5); flex: 1; min-width: 140px; }
+    .image-preview {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid rgba(0,180,255,0.2);
+      display: none;
+      background: rgba(0,0,0,0.3);
+    }
+    .image-upload-btn {
+      padding: 6px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(0,180,255,0.3);
+      background: rgba(0,180,255,0.1);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .image-upload-btn:hover { background: rgba(0,180,255,0.2); }
+    .image-delete-btn {
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,51,102,0.3);
+      background: rgba(255,51,102,0.1);
+      color: #ff3366;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .image-delete-btn:hover { background: rgba(255,51,102,0.2); }
+    .status-msg { margin-top: 10px; font-size: 13px; text-align: center; }
+    .error-text { color: #ff6b6b; font-size: 12px; margin-top: 6px; }
+    .back-link {
+      display: inline-block;
+      margin-top: 20px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 700;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--accent); }
+    @media (max-width: 600px) {
+      .toggle-grid { grid-template-columns: 1fr; }
+      .flex-row { flex-direction: column; }
+      .flex-row .action-btn { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+<div class="main-container">
+  <div class="header">
+    <div class="logo">MALIYA<span>-MD</span></div>
+    <p>Bot Settings Panel</p>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <div class="icon"><i class="fa-solid fa-sliders"></i></div>
+      <div>
+        <h2>Configure Your Bot</h2>
+        <p id="settingsStatus">Enter your phone number to verify</p>
+      </div>
+    </div>
+    <div class="card-body">
+      <!-- Step 1: Verify Phone -->
+      <div id="settingsAuth">
+        <div class="flex-row">
+          <input type="tel" id="settingsPhone" class="input-field"
+            placeholder="Your WhatsApp number (947XXXXXXXX)"
+            onkeydown="if(event.key==='Enter')requestSettingsCode()" />
+          <button class="action-btn" id="settingsVerifyBtn" onclick="requestSettingsCode()">
+            <i class="fa-solid fa-check"></i> Verify
+          </button>
+        </div>
+        <div id="settingsCodeSection" style="display:none;margin-top:10px;">
+          <div class="flex-row">
+            <input type="text" id="settingsCode" class="input-field"
+              placeholder="6-digit code" maxlength="6"
+              style="text-align:center;font-size:20px;letter-spacing:4px;"
+              onkeydown="if(event.key==='Enter')verifySettingsCode()" />
+            <button class="action-btn" onclick="verifySettingsCode()">
+              <i class="fa-solid fa-key"></i> Verify
+            </button>
+          </div>
+          <div id="settingsCodeError" class="error-text"></div>
+        </div>
+      </div>
+
+      <!-- Step 2: Settings Panel -->
+      <div id="settingsPanel" style="display:none;margin-top:20px;">
+        <!-- Work Scope -->
+        <div class="settings-group">
+          <label class="settings-label">📍 Work Scope</label>
+          <select id="workScope" class="input-field" style="margin-bottom:0;">
+            <option value="private">🔒 Private Chat Only</option>
+            <option value="group">👥 Group Chat Only</option>
+            <option value="all">🌍 All Chats (Private + Group)</option>
+          </select>
+        </div>
+
+        <!-- Toggles -->
+        <div class="settings-group">
+          <label class="settings-label">⚙️ Features</label>
+          <div class="toggle-grid">
+            <label class="toggle-label"><input type="checkbox" id="btnsEnabled" /> 🔘 Buttons Mode</label>
+            <label class="toggle-label"><input type="checkbox" id="autoMsg" /> 🤖 AI Chat</label>
+            <label class="toggle-label"><input type="checkbox" id="antiSpam" /> 🛡️ Anti Spam</label>
+            <label class="toggle-label"><input type="checkbox" id="autoStatusSeen" /> 👁️ Auto Status Seen</label>
+            <label class="toggle-label"><input type="checkbox" id="autoStatusReact" /> ❤️ Auto Status React</label>
+            <label class="toggle-label"><input type="checkbox" id="antiDelete" /> 🛡️ Anti Delete</label>
+          </div>
+        </div>
+
+        <!-- Images -->
+        <div class="settings-group">
+          <label class="settings-label">🖼️ Custom Images</label>
+          <div id="imageUploads">
+            <div class="image-upload-row">
+              <span style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.6);min-width:120px;">Alive</span>
+              <input type="file" accept="image/*" onchange="previewImage(this, 'alivePreview')" />
+              <img id="alivePreview" class="image-preview" />
+              <button onclick="uploadImage('alive')" class="image-upload-btn">Upload</button>
+              <button onclick="deleteImage('alive')" class="image-delete-btn">✕</button>
+            </div>
+            <div class="image-upload-row">
+              <span style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.6);min-width:120px;">Menu Header</span>
+              <input type="file" accept="image/*" onchange="previewImage(this, 'menuPreview')" />
+              <img id="menuPreview" class="image-preview" />
+              <button onclick="uploadImage('menu_header')" class="image-upload-btn">Upload</button>
+              <button onclick="deleteImage('menu_header')" class="image-delete-btn">✕</button>
+            </div>
+            <div class="image-upload-row">
+              <span style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.6);min-width:120px;">Song</span>
+              <input type="file" accept="image/*" onchange="previewImage(this, 'songPreview')" />
+              <img id="songPreview" class="image-preview" />
+              <button onclick="uploadImage('song')" class="image-upload-btn">Upload</button>
+              <button onclick="deleteImage('song')" class="image-delete-btn">✕</button>
+            </div>
+          </div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:8px;">
+            Max 3MB per image. JPG, PNG, GIF, WebP.
+          </div>
+        </div>
+
+        <button class="action-btn" id="settingsSaveBtn" onclick="saveAllSettings()" style="margin-top:20px;">
+          <i class="fa-solid fa-floppy-disk"></i> Save All Changes
+        </button>
+        <div id="settingsSaveStatus" class="status-msg"></div>
+      </div>
+    </div>
+  </div>
+  <a href="/" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to Home</a>
+</div>
+
+<script>
+  // ── Settings API JS (same as in index.html) ──
+  let settingsToken = localStorage.getItem("settingsToken") || "";
+  let settingsSessionId = "";
+
+  async function requestSettingsCode() {
+    const phone = document.getElementById("settingsPhone").value.replace(/[^0-9]/g, "");
+    if (!phone || phone.length < 7) { alert("Please enter a valid WhatsApp number."); return; }
+    const btn = document.getElementById("settingsVerifyBtn");
+    btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
+    try {
+      const res = await fetch("/api/settings/request-code", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone })
+      });
+      const data = await res.json();
+      if (!data.ok) { alert(data.error || "Failed to send code."); return; }
+      settingsSessionId = data.sessionId;
+      document.getElementById("settingsCodeSection").style.display = "block";
+      document.getElementById("settingsStatus").textContent = `📱 Code sent to ${data.phone}`;
+      document.getElementById("settingsCodeError").textContent = "";
+      document.getElementById("settingsCode").focus();
+    } catch { alert("Network error. Please try again."); }
+    finally { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> Verify'; }
+  }
+
+  async function verifySettingsCode() {
+    const code = document.getElementById("settingsCode").value.trim();
+    if (!code || code.length < 4) { document.getElementById("settingsCodeError").textContent = "Please enter the 6-digit code."; return; }
+    if (!settingsSessionId) { document.getElementById("settingsCodeError").textContent = "Session not found. Request a new code."; return; }
+    const btn = document.querySelector("#settingsCodeSection .action-btn");
+    btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verifying...';
+    try {
+      const res = await fetch("/api/settings/verify-code", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId: settingsSessionId, code })
+      });
+      const data = await res.json();
+      if (!data.ok) { document.getElementById("settingsCodeError").textContent = data.error || "Invalid code."; return; }
+      settingsToken = data.token; localStorage.setItem("settingsToken", data.token);
+      document.getElementById("settingsCodeError").textContent = "✅ Verified! Loading settings...";
+      await loadSettings();
+      document.getElementById("settingsAuth").style.display = "none";
+      document.getElementById("settingsPanel").style.display = "block";
+      document.getElementById("settingsStatus").textContent = "✅ Settings loaded. Make your changes below.";
+    } catch { document.getElementById("settingsCodeError").textContent = "Network error. Please try again."; }
+    finally { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-key"></i> Verify'; }
+  }
+
+  async function loadSettings() {
+    if (!settingsToken) return;
+    try {
+      const res = await fetch("/api/settings", { headers: { "x-settings-token": settingsToken } });
+      const data = await res.json();
+      if (!data.ok) { alert(data.error || "Failed to load settings."); return; }
+      const { settings, images } = data;
+      document.getElementById("workScope").value = settings.work_scope || "private";
+      document.getElementById("btnsEnabled").checked = !!settings.btns_enabled;
+      document.getElementById("autoMsg").checked = !!settings.auto_msg;
+      document.getElementById("antiSpam").checked = !!settings.anti_spam;
+      document.getElementById("autoStatusSeen").checked = !!settings.auto_status_seen;
+      document.getElementById("autoStatusReact").checked = !!settings.auto_status_react;
+      document.getElementById("antiDelete").checked = !!settings.anti_delete;
+      const imageMap = {};
+      images.forEach(img => { imageMap[img.key] = img; });
+      const previewMap = { alive: "alivePreview", menu_header: "menuPreview", song: "songPreview" };
+      for (const [key, previewId] of Object.entries(previewMap)) {
+        const img = document.getElementById(previewId);
+        if (imageMap[key] && imageMap[key].data) { img.src = imageMap[key].data; img.style.display = "block"; }
+        else { img.style.display = "none"; }
+      }
+    } catch (e) { alert("Failed to load settings: " + e.message); }
+  }
+
+  function previewImage(input, previewId) {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 3 * 1024 * 1024) { alert("Image is too large! Maximum size is 3MB."); input.value = ""; return; }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = document.getElementById(previewId);
+      img.src = e.target.result; img.style.display = "block";
+      input.dataset.dataUrl = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function uploadImage(key) {
+    if (!settingsToken) { alert("Please verify your phone first."); return; }
+    const inputMap = {
+      alive: document.querySelector('#imageUploads input[onchange*="alivePreview"]'),
+      menu_header: document.querySelector('#imageUploads input[onchange*="menuPreview"]'),
+      song: document.querySelector('#imageUploads input[onchange*="songPreview"]'),
+    };
+    const input = inputMap[key];
+    if (!input || !input.files || !input.files[0]) { alert("Please select an image first."); return; }
+    const dataUrl = input.dataset.dataUrl;
+    if (!dataUrl) { alert("Please select an image first."); return; }
+    const btn = input.parentElement.querySelector(".image-upload-btn");
+    btn.disabled = true; btn.textContent = "Uploading...";
+    try {
+      const res = await fetch("/api/settings", {
+        method: "POST", headers: { "Content-Type": "application/json", "x-settings-token": settingsToken },
+        body: JSON.stringify({ images: { [key]: dataUrl } })
+      });
+      const data = await res.json();
+      if (!data.ok) { alert(data.error || "Upload failed."); return; }
+      document.getElementById("settingsSaveStatus").textContent = "✅ Image uploaded successfully!";
+      document.getElementById("settingsSaveStatus").style.color = "#00ffd5";
+    } catch { alert("Upload failed: " + e.message); }
+    finally { btn.disabled = false; btn.textContent = "Upload"; }
+  }
+
+  async function deleteImage(key) {
+    if (!settingsToken) { alert("Please verify your phone first."); return; }
+    if (!confirm(`Delete this ${key} image?`)) return;
+    try {
+      const res = await fetch(`/api/settings/image/${key}`, {
+        method: "DELETE", headers: { "x-settings-token": settingsToken }
+      });
+      const data = await res.json();
+      if (!data.ok) { alert("Failed to delete image."); return; }
+      const previewMap = { alive: "alivePreview", menu_header: "menuPreview", song: "songPreview" };
+      const img = document.getElementById(previewMap[key]);
+      if (img) {
+        img.src = ""; img.style.display = "none";
+        const inputMap = {
+          alive: document.querySelector('#imageUploads input[onchange*="alivePreview"]'),
+          menu_header: document.querySelector('#imageUploads input[onchange*="menuPreview"]'),
+          song: document.querySelector('#imageUploads input[onchange*="songPreview"]'),
+        };
+        if (inputMap[key]) { inputMap[key].value = ""; delete inputMap[key].dataset.dataUrl; }
+      }
+      document.getElementById("settingsSaveStatus").textContent = "✅ Image deleted.";
+      document.getElementById("settingsSaveStatus").style.color = "#ff6b6b";
+    } catch { alert("Delete failed: " + e.message); }
+  }
+
+  async function saveAllSettings() {
+    if (!settingsToken) { alert("Please verify your phone first."); return; }
+    const settings = {
+      work_scope: document.getElementById("workScope").value,
+      btns_enabled: document.getElementById("btnsEnabled").checked,
+      auto_msg: document.getElementById("autoMsg").checked,
+      anti_spam: document.getElementById("antiSpam").checked,
+      auto_status_seen: document.getElementById("autoStatusSeen").checked,
+      auto_status_react: document.getElementById("autoStatusReact").checked,
+      anti_delete: document.getElementById("antiDelete").checked,
+    };
+    const btn = document.getElementById("settingsSaveBtn");
+    const statusEl = document.getElementById("settingsSaveStatus");
+    btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+    statusEl.textContent = "";
+    try {
+      const res = await fetch("/api/settings", {
+        method: "POST", headers: { "Content-Type": "application/json", "x-settings-token": settingsToken },
+        body: JSON.stringify({ settings })
+      });
+      const data = await res.json();
+      if (!data.ok) { statusEl.textContent = "❌ " + (data.error || "Save failed."); statusEl.style.color = "#ff6b6b"; return; }
+      statusEl.textContent = "✅ All settings saved successfully!"; statusEl.style.color = "#00ffd5";
+      alert("Settings saved successfully!");
+    } catch (e) { statusEl.textContent = "❌ " + e.message; statusEl.style.color = "#ff6b6b"; }
+    finally { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save All Changes'; }
+  }
+
+  // Auto-load if token exists
+  document.addEventListener("DOMContentLoaded", function() {
+    if (settingsToken) {
+      loadSettings().then(() => {
+        document.getElementById("settingsAuth").style.display = "none";
+        document.getElementById("settingsPanel").style.display = "block";
+        document.getElementById("settingsStatus").textContent = "✅ Already authenticated. Settings loaded.";
+      }).catch(() => { settingsToken = ""; localStorage.removeItem("settingsToken"); });
+    }
+  });
+</script>
+</body>
+</html>
