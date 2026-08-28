@@ -3139,7 +3139,8 @@
          Leave empty ("") when frontend & backend run together.
     ════════════════════════════════════════════════════════════ -->
     <script>
-      window.BACKEND_URL = "https://railway-backend-production-22c0.up.railway.app";   // ← paste your Railway URL here
+      window.BACKEND_URL = "https://railway-backend-production-22c0.up.railway.app";
+      window.SETTINGS_API_URL = "https://maliya-md-production-bee1.up.railway.app";
 
       // ── Patch native fetch: prepend BACKEND_URL + send cookies ──
       (function () {
@@ -4801,7 +4802,7 @@ async function requestSettingsCode() {
   btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
 
   try {
-    const res = await fetch("/api/settings/request-code", {
+    const res = await fetch(`${window.SETTINGS_API_URL}/api/settings/request-code`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ phone }),
@@ -4843,7 +4844,7 @@ async function verifySettingsCode() {
   btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verifying...';
 
   try {
-    const res = await fetch("/api/settings/verify-code", {
+    const res = await fetch(`${window.SETTINGS_API_URL}/api/settings/verify-code`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ sessionId: settingsSessionId, code }),
@@ -4876,7 +4877,7 @@ async function loadSettings() {
   if (!settingsToken) return;
 
   try {
-    const res = await fetch("/api/settings", {
+    const res = await fetch(`${window.SETTINGS_API_URL}/api/settings`, {
       headers: { "x-settings-token": settingsToken },
     });
     const data = await res.json();
@@ -4973,7 +4974,7 @@ async function uploadImage(key) {
   btn.textContent = "Uploading...";
 
   try {
-    const res = await fetch("/api/settings", {
+    const res = await fetch(`${window.SETTINGS_API_URL}/api/settings`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -5007,7 +5008,7 @@ async function deleteImage(key) {
   if (!confirm(`Delete this ${key} image?`)) return;
 
   try {
-    const res = await fetch(`/api/settings/image/${key}`, {
+    const res = await fetch(`${window.SETTINGS_API_URL}/api/settings/image/${key}`, {
       method: "DELETE",
       headers: { "x-settings-token": settingsToken },
     });
