@@ -4309,8 +4309,8 @@
 </div>
 
 <!-- ===== PAGE: SETTINGS ===== -->
+<!-- ===== PAGE: SETTINGS ===== -->
 <div class="page" id="page-settings">
-  <!-- 🔥 මෙතනට ඔබගේ settings HTML code එක paste කරන්න -->
   <div class="section-wrap">
     <div class="section-header fade-in">
       <div class="section-badge">
@@ -4322,8 +4322,134 @@
         All changes are saved per session and apply instantly.
       </p>
     </div>
+
     <div class="pair-card fade-in" style="max-width:700px;margin:0 auto;">
-      <!-- ... rest of settings HTML ... -->
+      <div class="pair-card-header">
+        <div class="pair-card-icon"><i class="fa-solid fa-sliders"></i></div>
+        <div>
+          <h2>Settings Panel</h2>
+          <p id="settingsStatus">Enter your phone number to verify</p>
+        </div>
+      </div>
+      <div class="pair-card-body">
+        <!-- Step 1: Verify Phone -->
+        <div id="settingsAuth">
+          <div style="display:flex;gap:10px;margin-bottom:14px;">
+            <input type="tel" id="settingsPhone" class="input-field"
+              placeholder="Your WhatsApp number (947XXXXXXXX)"
+              style="flex:1;margin-bottom:0;"
+              onkeydown="if(event.key==='Enter')requestSettingsCode()" />
+            <button class="action-btn" id="settingsVerifyBtn" onclick="requestSettingsCode()"
+              style="width:auto;padding:13px 20px;white-space:nowrap;">
+              <i class="fa-solid fa-check"></i> Verify
+            </button>
+          </div>
+          <div id="settingsCodeSection" style="display:none;margin-top:10px;">
+            <div style="display:flex;gap:10px;">
+              <input type="text" id="settingsCode" class="input-field"
+                placeholder="6-digit code" maxlength="6"
+                style="flex:1;margin-bottom:0;text-align:center;font-size:20px;letter-spacing:4px;"
+                onkeydown="if(event.key==='Enter')verifySettingsCode()" />
+              <button class="action-btn" onclick="verifySettingsCode()"
+                style="width:auto;padding:13px 20px;white-space:nowrap;">
+                <i class="fa-solid fa-key"></i> Verify
+              </button>
+            </div>
+            <div id="settingsCodeError" style="color:#ff6b6b;font-size:12px;margin-top:6px;"></div>
+          </div>
+        </div>
+
+        <!-- Step 2: Settings Panel (hidden until verified) -->
+        <div id="settingsPanel" style="display:none;margin-top:20px;">
+
+          <!-- Work Scope -->
+          <div class="settings-group">
+            <label class="settings-label">📍 Work Scope</label>
+            <select id="workScope" class="input-field" style="margin-bottom:0;">
+              <option value="private">🔒 Private Chat Only</option>
+              <option value="group">👥 Group Chat Only</option>
+              <option value="all">🌍 All Chats (Private + Group)</option>
+            </select>
+          </div>
+
+          <!-- Toggles -->
+          <div class="settings-group" style="margin-top:16px;">
+            <label class="settings-label">⚙️ Features</label>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <label class="toggle-label">
+                <input type="checkbox" id="btnsEnabled" />
+                🔘 Buttons Mode
+              </label>
+              <label class="toggle-label">
+                <input type="checkbox" id="autoMsg" />
+                🤖 AI Chat
+              </label>
+              <label class="toggle-label">
+                <input type="checkbox" id="antiSpam" />
+                🛡️ Anti Spam
+              </label>
+              <label class="toggle-label">
+                <input type="checkbox" id="autoStatusSeen" />
+                👁️ Auto Status Seen
+              </label>
+              <label class="toggle-label">
+                <input type="checkbox" id="autoStatusReact" />
+                ❤️ Auto Status React
+              </label>
+              <label class="toggle-label">
+                <input type="checkbox" id="antiDelete" />
+                🛡️ Anti Delete
+              </label>
+            </div>
+          </div>
+
+          <!-- Image Uploads -->
+          <div class="settings-group" style="margin-top:16px;">
+            <label class="settings-label">🖼️ Custom Images</label>
+            <div id="imageUploads">
+              <!-- Alive Image -->
+              <div class="image-upload-row">
+                <span style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.6);min-width:120px;">
+                  Alive Image
+                </span>
+                <input type="file" accept="image/*" onchange="previewImage(this, 'alivePreview')" />
+                <img id="alivePreview" class="image-preview" />
+                <button onclick="uploadImage('alive')" class="image-upload-btn">Upload</button>
+                <button onclick="deleteImage('alive')" class="image-delete-btn">✕</button>
+              </div>
+              <!-- Menu Header -->
+              <div class="image-upload-row">
+                <span style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.6);min-width:120px;">
+                  Menu Header
+                </span>
+                <input type="file" accept="image/*" onchange="previewImage(this, 'menuPreview')" />
+                <img id="menuPreview" class="image-preview" />
+                <button onclick="uploadImage('menu_header')" class="image-upload-btn">Upload</button>
+                <button onclick="deleteImage('menu_header')" class="image-delete-btn">✕</button>
+              </div>
+              <!-- Song Thumbnail -->
+              <div class="image-upload-row">
+                <span style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.6);min-width:120px;">
+                  Song Thumbnail
+                </span>
+                <input type="file" accept="image/*" onchange="previewImage(this, 'songPreview')" />
+                <img id="songPreview" class="image-preview" />
+                <button onclick="uploadImage('song')" class="image-upload-btn">Upload</button>
+                <button onclick="deleteImage('song')" class="image-delete-btn">✕</button>
+              </div>
+            </div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:8px;">
+              Max 3MB per image. Supported: JPG, PNG, GIF, WebP.
+            </div>
+          </div>
+
+          <!-- Save Button -->
+          <button class="action-btn" id="settingsSaveBtn" onclick="saveAllSettings()" style="margin-top:20px;">
+            <i class="fa-solid fa-floppy-disk"></i> Save All Changes
+          </button>
+          <div id="settingsSaveStatus" style="margin-top:10px;font-size:13px;text-align:center;"></div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
