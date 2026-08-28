@@ -5070,7 +5070,7 @@ async function saveAllSettings() {
   statusEl.textContent = "";
 
   try {
-    const res = await fetch("/api/settings", {
+    const res = await fetch(`${window.SETTINGS_API_URL}/api/settings`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
