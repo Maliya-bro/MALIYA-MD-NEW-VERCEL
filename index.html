@@ -2596,13 +2596,13 @@
       </div>
     </div>
 
-    <!-- ===== PAGE: SETTINGS ===== -->
+<!-- ===== PAGE: SETTINGS ===== -->
     <div class="page" id="page-settings">
       <div class="section-wrap">
         <div class="section-header fade-in">
           <div class="section-badge"><i class="fa-solid fa-gear"></i> BOT SETTINGS</div>
           <h2 class="section-title">Configure <span>Your Bot</span></h2>
-          <p class="section-sub">Change bot behaviour, appearance, and upload custom images. All changes are saved per session and apply instantly.</p>
+          <p class="section-sub">Change bot behaviour, appearance, and add custom image URLs. All changes are saved per session and apply instantly.</p>
         </div>
 
         <div class="pair-card fade-in" style="max-width:700px;margin:0 auto;">
@@ -2681,36 +2681,40 @@
                   <label class="toggle-label"><input type="checkbox" id="autoStatusReact" /> ❤️ Status React</label>
                   <label class="toggle-label"><input type="checkbox" id="autoDownloadStatus" /> 📥 Status Download</label>
                   <label class="toggle-label"><input type="checkbox" id="autoReactMsg" /> 💖 Auto Msg React</label>
+                  <label class="toggle-label"><input type="checkbox" id="silentAutomation" /> 🤫 Silent Automation</label>
                 </div>
               </div>
 
-              <!-- Image Uploads -->
+              <!-- Image URL Uploads -->
               <div class="settings-group" style="margin-top:16px;">
-                <label class="settings-label">🖼️ Custom Images</label>
+                <label class="settings-label">🖼️ Custom Image URLs</label>
                 <div id="imageUploads">
+                  <!-- Alive Image URL -->
                   <div class="image-upload-row">
                     <span style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.6);min-width:120px;">Alive Image</span>
-                    <input type="file" accept="image/*" onchange="previewImage(this, 'alivePreview')" />
+                    <input type="url" id="aliveUrl" class="input-field" placeholder="https://example.com/image.jpg" style="flex:1;margin-bottom:0;padding:8px 12px;" oninput="previewUrl(this, 'alivePreview')" />
                     <img id="alivePreview" class="image-preview" />
-                    <button onclick="uploadImage('alive')" class="image-upload-btn">Upload</button>
+                    <button onclick="uploadImage('alive')" class="image-upload-btn">Save URL</button>
                     <button onclick="deleteImage('alive')" class="image-delete-btn">✕</button>
                   </div>
+                  <!-- Menu Header URL -->
                   <div class="image-upload-row">
                     <span style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.6);min-width:120px;">Menu Header</span>
-                    <input type="file" accept="image/*" onchange="previewImage(this, 'menuPreview')" />
+                    <input type="url" id="menu_headerUrl" class="input-field" placeholder="https://example.com/menu.jpg" style="flex:1;margin-bottom:0;padding:8px 12px;" oninput="previewUrl(this, 'menuPreview')" />
                     <img id="menuPreview" class="image-preview" />
-                    <button onclick="uploadImage('menu_header')" class="image-upload-btn">Upload</button>
+                    <button onclick="uploadImage('menu_header')" class="image-upload-btn">Save URL</button>
                     <button onclick="deleteImage('menu_header')" class="image-delete-btn">✕</button>
                   </div>
+                  <!-- Song Thumbnail URL -->
                   <div class="image-upload-row">
                     <span style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.6);min-width:120px;">Song Thumbnail</span>
-                    <input type="file" accept="image/*" onchange="previewImage(this, 'songPreview')" />
+                    <input type="url" id="songUrl" class="input-field" placeholder="https://example.com/song.jpg" style="flex:1;margin-bottom:0;padding:8px 12px;" oninput="previewUrl(this, 'songPreview')" />
                     <img id="songPreview" class="image-preview" />
-                    <button onclick="uploadImage('song')" class="image-upload-btn">Upload</button>
+                    <button onclick="uploadImage('song')" class="image-upload-btn">Save URL</button>
                     <button onclick="deleteImage('song')" class="image-delete-btn">✕</button>
                   </div>
                 </div>
-                <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:8px;">Max 3MB per image. Supported: JPG, PNG, GIF, WebP.</div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:8px;">Direct image URLs only (e.g. ends in .jpg, .png).</div>
               </div>
 
               <!-- Save Button -->
@@ -3121,7 +3125,7 @@
       window.submitRegister = async function() { clearAuthError(); const name = document.getElementById("regName").value.trim(); const email = document.getElementById("regEmail").value.trim(); const password = document.getElementById("regPassword").value; const confirm = document.getElementById("regConfirm").value; if (!name || !email || !password) return showAuthError("All fields are required."); if (password !== confirm) return showAuthError("Passwords do not match."); if (password.length < 6) return showAuthError("Password must be at least 6 characters."); setAuthBusy(true); try { const res = await fetch("/auth/register", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, email, password }), }); const data = await res.json(); if (!data.ok) { showAuthError(data.error || "Registration failed."); return; } closeAuthModal(); if (typeof renderAuth === "function") renderAuth(data.user); } catch { showAuthError("Network error. Try again."); } finally { setAuthBusy(false); } };
       document.addEventListener("keydown", e => { if (e.key === "Escape") closeAuthModal(); });
 
-      // ===== SETTINGS PAGE JS =====
+     // ===== SETTINGS PAGE JS =====
       let settingsToken = localStorage.getItem("settingsToken") || "";
       let settingsSessionId = "";
 
@@ -3176,67 +3180,91 @@
           if (!data.ok) return alert(data.error || "Failed to load settings.");
 
           const { settings, images } = data;
+          
           if(document.getElementById("botMode")) document.getElementById("botMode").value = settings.mode || "public";
           if(document.getElementById("workScope")) document.getElementById("workScope").value = settings.work_scope || "private";
           if(document.getElementById("autoReactMode")) document.getElementById("autoReactMode").value = settings.auto_react_mode || "all";
           if(document.getElementById("alwaysPresence")) document.getElementById("alwaysPresence").value = settings.always_presence || "off";
 
-          if(document.getElementById("btnsEnabled")) document.getElementById("btnsEnabled").checked = !!settings.btns_enabled;
-          if(document.getElementById("autoMsg")) document.getElementById("autoMsg").checked = !!settings.auto_msg;
-          if(document.getElementById("seenAllMsg")) document.getElementById("seenAllMsg").checked = !!settings.seen_all_msg;
-          if(document.getElementById("antiSpam")) document.getElementById("antiSpam").checked = !!settings.anti_spam;
-          if(document.getElementById("antiDelete")) document.getElementById("antiDelete").checked = !!settings.anti_delete;
-          if(document.getElementById("autoRejectCalls")) document.getElementById("autoRejectCalls").checked = !!settings.auto_reject_calls;
-          if(document.getElementById("autoStatusSeen")) document.getElementById("autoStatusSeen").checked = !!settings.auto_status_seen;
-          if(document.getElementById("autoStatusReact")) document.getElementById("autoStatusReact").checked = !!settings.auto_status_react;
-          if(document.getElementById("autoDownloadStatus")) document.getElementById("autoDownloadStatus").checked = !!settings.auto_download_status;
-          if(document.getElementById("autoReactMsg")) document.getElementById("autoReactMsg").checked = !!settings.auto_react_msg;
+          const toggles = ['btnsEnabled', 'autoMsg', 'seenAllMsg', 'antiSpam', 'antiDelete', 'autoRejectCalls', 'autoStatusSeen', 'autoStatusReact', 'autoDownloadStatus', 'autoReactMsg', 'silentAutomation'];
+          const dbKeys = ['btns_enabled', 'auto_msg', 'seen_all_msg', 'anti_spam', 'anti_delete', 'auto_reject_calls', 'auto_status_seen', 'auto_status_react', 'auto_download_status', 'auto_react_msg', 'silent_automation'];
+          
+          toggles.forEach((id, index) => {
+              const el = document.getElementById(id);
+              if(el) el.checked = !!settings[dbKeys[index]];
+          });
 
           const imageMap = {};
           if(images && images.length) { images.forEach(img => { imageMap[img.key] = img; }); }
-          const previewMap = { alive: "alivePreview", menu_header: "menuPreview", song: "songPreview" };
-          for (const [key, previewId] of Object.entries(previewMap)) {
-            const img = document.getElementById(previewId);
-            if (img) { if (imageMap[key] && imageMap[key].data) { img.src = imageMap[key].data; img.style.display = "block"; } else { img.style.display = "none"; } }
+          
+          const previewMap = { alive: { img: "alivePreview", input: "aliveUrl" }, menu_header: { img: "menuPreview", input: "menu_headerUrl" }, song: { img: "songPreview", input: "songUrl" } };
+          
+          for (const [key, map] of Object.entries(previewMap)) {
+            const img = document.getElementById(map.img);
+            const input = document.getElementById(map.input);
+            if (imageMap[key] && imageMap[key].data) {
+                if(input) input.value = imageMap[key].data;
+                if(img) { img.src = imageMap[key].data; img.style.display = "block"; }
+            } else {
+                if(input) input.value = "";
+                if(img) { img.style.display = "none"; }
+            }
           }
         } catch (e) { alert("Failed to load settings: " + e.message); }
       }
 
-      function previewImage(input, previewId) {
-        const file = input.files[0]; if (!file) return;
-        if (file.size > 3 * 1024 * 1024) { alert("Image is too large! Maximum size is 3MB."); input.value = ""; return; }
-        const reader = new FileReader();
-        reader.onload = function(e) { const img = document.getElementById(previewId); img.src = e.target.result; img.style.display = "block"; input.dataset.dataUrl = e.target.result; };
-        reader.readAsDataURL(file);
+      function previewUrl(input, previewId) {
+        const img = document.getElementById(previewId);
+        if (input.value.trim()) {
+            img.src = input.value.trim();
+            img.style.display = "block";
+        } else {
+            img.src = "";
+            img.style.display = "none";
+        }
       }
 
       async function uploadImage(key) {
         if (!settingsToken) return alert("Please verify your phone first.");
-        const inputMap = { alive: document.querySelector('#imageUploads input[onchange*="alivePreview"]'), menu_header: document.querySelector('#imageUploads input[onchange*="menuPreview"]'), song: document.querySelector('#imageUploads input[onchange*="songPreview"]'), };
-        const input = inputMap[key]; if (!input || !input.files || !input.files[0]) return alert("Please select an image first.");
-        const dataUrl = input.dataset.dataUrl; if (!dataUrl) return alert("Please select an image first.");
-        const btn = input.parentElement.querySelector(".image-upload-btn"); btn.disabled = true; btn.textContent = "Uploading...";
+        const input = document.getElementById(key + "Url");
+        const dataUrl = input.value.trim();
+        if (!dataUrl) return alert("Please enter an image URL.");
+        
+        const btn = input.parentElement.querySelector(".image-upload-btn"); 
+        btn.disabled = true; btn.textContent = "Saving...";
         try {
-          const res = await fetch(`${window.SETTINGS_API_URL}/api/settings`, { method: "POST", headers: { "Content-Type": "application/json", "x-settings-token": settingsToken, }, body: JSON.stringify({ images: { [key]: dataUrl } }), });
+          const res = await fetch(`${window.SETTINGS_API_URL}/api/settings`, { 
+              method: "POST", 
+              headers: { "Content-Type": "application/json", "x-settings-token": settingsToken }, 
+              body: JSON.stringify({ images: { [key]: dataUrl } }), 
+          });
           if (res.status === 401) { handleUnauthorized(); return; }
           const data = await res.json();
-          if (!data.ok) return alert(data.error || "Upload failed.");
-          document.getElementById("settingsSaveStatus").textContent = "✅ Image uploaded successfully!"; document.getElementById("settingsSaveStatus").style.color = "#00ffd5";
-        } catch (e) { alert("Upload failed: " + e.message); } finally { btn.disabled = false; btn.textContent = "Upload"; }
+          if (!data.ok) return alert(data.error || "Save failed.");
+          document.getElementById("settingsSaveStatus").textContent = "✅ URL saved successfully!"; 
+          document.getElementById("settingsSaveStatus").style.color = "#00ffd5";
+        } catch (e) { alert("Save failed: " + e.message); } finally { btn.disabled = false; btn.textContent = "Save URL"; }
       }
 
       async function deleteImage(key) {
         if (!settingsToken) return alert("Please verify your phone first.");
-        if (!confirm(`Delete this ${key} image?`)) return;
+        if (!confirm(`Delete this ${key} URL?`)) return;
         try {
           const res = await fetch(`${window.SETTINGS_API_URL}/api/settings/image/${key}`, { method: "DELETE", headers: { "x-settings-token": settingsToken }, });
           if (res.status === 401) { handleUnauthorized(); return; }
           const data = await res.json();
-          if (!data.ok) return alert("Failed to delete image.");
-          const previewMap = { alive: "alivePreview", menu_header: "menuPreview", song: "songPreview" };
-          const img = document.getElementById(previewMap[key]);
-          if (img) { img.src = ""; img.style.display = "none"; const inputMap = { alive: document.querySelector('#imageUploads input[onchange*="alivePreview"]'), menu_header: document.querySelector('#imageUploads input[onchange*="menuPreview"]'), song: document.querySelector('#imageUploads input[onchange*="songPreview"]'), }; if (inputMap[key]) { inputMap[key].value = ""; delete inputMap[key].dataset.dataUrl; } }
-          document.getElementById("settingsSaveStatus").textContent = "✅ Image deleted."; document.getElementById("settingsSaveStatus").style.color = "#ff6b6b";
+          if (!data.ok) return alert("Failed to delete URL.");
+          
+          const previewMap = { alive: { img: "alivePreview", input: "aliveUrl" }, menu_header: { img: "menuPreview", input: "menu_headerUrl" }, song: { img: "songPreview", input: "songUrl" } };
+          const map = previewMap[key];
+          
+          if (map) { 
+              const img = document.getElementById(map.img);
+              const input = document.getElementById(map.input);
+              if(img) { img.src = ""; img.style.display = "none"; }
+              if(input) { input.value = ""; }
+          }
+          document.getElementById("settingsSaveStatus").textContent = "✅ URL deleted."; document.getElementById("settingsSaveStatus").style.color = "#ff6b6b";
         } catch (e) { alert("Delete failed: " + e.message); }
       }
 
@@ -3257,6 +3285,7 @@
           auto_status_react: document.getElementById("autoStatusReact")?.checked || false,
           auto_download_status: document.getElementById("autoDownloadStatus")?.checked || false,
           auto_react_msg: document.getElementById("autoReactMsg")?.checked || false,
+          silent_automation: document.getElementById("silentAutomation")?.checked || false,
         };
         const btn = document.getElementById("settingsSaveBtn"); const statusEl = document.getElementById("settingsSaveStatus");
         btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...'; statusEl.textContent = "";
@@ -3276,7 +3305,6 @@
           await loadSettings();
           if(settingsToken) { document.getElementById("settingsAuth").style.display = "none"; document.getElementById("settingsPanel").style.display = "block"; document.getElementById("settingsStatus").textContent = "✅ Already authenticated. Settings loaded."; }
         }
-      });
-    </script>
+      });    </script>
   </body>
 </html>
