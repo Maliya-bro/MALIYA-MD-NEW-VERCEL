@@ -2705,7 +2705,15 @@
                     <button onclick="uploadImage('menu_header')" class="image-upload-btn">Save URL</button>
                     <button onclick="deleteImage('menu_header')" class="image-delete-btn">✕</button>
                   </div>
-                  <!-- Universal Search Image URL (Trick එක) -->
+                  <!-- Settings Image URL -->
+                  <div class="image-upload-row">
+                    <span style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.6);min-width:120px;">Settings Image</span>
+                    <input type="url" id="settings_headerUrl" class="input-field" placeholder="https://example.com/settings.jpg" style="flex:1;margin-bottom:0;padding:8px 12px;" oninput="previewUrl(this, 'settingsPreview')" />
+                    <img id="settingsPreview" class="image-preview" />
+                    <button onclick="uploadImage('settings_header')" class="image-upload-btn">Save URL</button>
+                    <button onclick="deleteImage('settings_header')" class="image-delete-btn">✕</button>
+                  </div>
+                  <!-- Universal Search Image URL (Trick) -->
                   <div class="image-upload-row">
                     <span style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.6);min-width:120px;">Search Image</span>
                     <input type="url" id="search_imageUrl" class="input-field" placeholder="https://example.com/search.jpg" style="flex:1;margin-bottom:0;padding:8px 12px;" oninput="previewUrl(this, 'searchPreview')" />
@@ -3197,8 +3205,12 @@
           const imageMap = {};
           if(images && images.length) { images.forEach(img => { imageMap[img.key] = img; }); }
           
-          // Alive & Menu Headers load කිරීම
-          const previewMap = { alive: { img: "alivePreview", input: "aliveUrl" }, menu_header: { img: "menuPreview", input: "menu_headerUrl" } };
+          // Alive, Menu, & Settings Headers load කිරීම
+          const previewMap = { 
+            alive: { img: "alivePreview", input: "aliveUrl" }, 
+            menu_header: { img: "menuPreview", input: "menu_headerUrl" },
+            settings_header: { img: "settingsPreview", input: "settings_headerUrl" } // අලුත් එක!
+          };
           for (const [key, map] of Object.entries(previewMap)) {
             const img = document.getElementById(map.img);
             const input = document.getElementById(map.input);
@@ -3211,7 +3223,7 @@
             }
           }
 
-          // Universal Search Image එක load කිරීම (කෝක හරි එකක් අරන් පෙන්නනවා)
+          // Universal Search Image එක load කිරීම
           const searchImgUrl = imageMap["cinesubz_header"]?.data || imageMap["anime_header"]?.data || imageMap["cartoon_header"]?.data || "";
           const searchImg = document.getElementById("searchPreview");
           const searchInput = document.getElementById("search_imageUrl");
@@ -3237,7 +3249,7 @@
         }
       }
 
-      // Normal upload (Alive & Menu)
+      // Normal upload
       async function uploadImage(key) {
         if (!settingsToken) return alert("Please verify your phone first.");
         const input = document.getElementById(key + "Url");
@@ -3260,7 +3272,7 @@
         } catch (e) { alert("Save failed: " + e.message); } finally { btn.disabled = false; btn.textContent = "Save URL"; }
       }
 
-      // Universal Search Image Upload (Trick එක)
+      // Universal Search Image Upload
       async function uploadSearchImage() {
         if (!settingsToken) return alert("Please verify your phone first.");
         const input = document.getElementById("search_imageUrl");
@@ -3270,7 +3282,6 @@
         const btn = input.parentElement.querySelector(".image-upload-btn"); 
         btn.disabled = true; btn.textContent = "Saving All...";
         
-        // මේ keys ටිකටම එකපාර URL එක සේව් කරනවා
         const keysToUpdate = ["anime_header", "tiktok_header", "cinesubz_header", "cartoon_header", "education_header", "song"];
         
         try {
@@ -3303,7 +3314,11 @@
           const data = await res.json();
           if (!data.ok) return alert("Failed to delete URL.");
           
-          const previewMap = { alive: { img: "alivePreview", input: "aliveUrl" }, menu_header: { img: "menuPreview", input: "menu_headerUrl" } };
+          const previewMap = { 
+            alive: { img: "alivePreview", input: "aliveUrl" }, 
+            menu_header: { img: "menuPreview", input: "menu_headerUrl" },
+            settings_header: { img: "settingsPreview", input: "settings_headerUrl" }
+          };
           const map = previewMap[key];
           if (map) { 
               const img = document.getElementById(map.img);
