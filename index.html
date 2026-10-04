@@ -2685,14 +2685,14 @@
                 </div>
               </div>
 
-              <!-- Image URL Uploads -->
+            <!-- Image URL Uploads -->
               <div class="settings-group" style="margin-top:16px;">
                 <label class="settings-label">🖼️ Custom Image URLs</label>
                 <div id="imageUploads">
                   <!-- Alive Image URL -->
                   <div class="image-upload-row">
                     <span style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.6);min-width:120px;">Alive Image</span>
-                    <input type="url" id="aliveUrl" class="input-field" placeholder="https://example.com/image.jpg" style="flex:1;margin-bottom:0;padding:8px 12px;" oninput="previewUrl(this, 'alivePreview')" />
+                    <input type="url" id="aliveUrl" class="input-field" placeholder="https://example.com/alive.jpg" style="flex:1;margin-bottom:0;padding:8px 12px;" oninput="previewUrl(this, 'alivePreview')" />
                     <img id="alivePreview" class="image-preview" />
                     <button onclick="uploadImage('alive')" class="image-upload-btn">Save URL</button>
                     <button onclick="deleteImage('alive')" class="image-delete-btn">✕</button>
@@ -2705,16 +2705,16 @@
                     <button onclick="uploadImage('menu_header')" class="image-upload-btn">Save URL</button>
                     <button onclick="deleteImage('menu_header')" class="image-delete-btn">✕</button>
                   </div>
-                  <!-- Song Thumbnail URL -->
+                  <!-- Universal Search Image URL (Trick එක) -->
                   <div class="image-upload-row">
-                    <span style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.6);min-width:120px;">Song Thumbnail</span>
-                    <input type="url" id="songUrl" class="input-field" placeholder="https://example.com/song.jpg" style="flex:1;margin-bottom:0;padding:8px 12px;" oninput="previewUrl(this, 'songPreview')" />
-                    <img id="songPreview" class="image-preview" />
-                    <button onclick="uploadImage('song')" class="image-upload-btn">Save URL</button>
-                    <button onclick="deleteImage('song')" class="image-delete-btn">✕</button>
+                    <span style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.6);min-width:120px;">Search Image</span>
+                    <input type="url" id="search_imageUrl" class="input-field" placeholder="https://example.com/search.jpg" style="flex:1;margin-bottom:0;padding:8px 12px;" oninput="previewUrl(this, 'searchPreview')" />
+                    <img id="searchPreview" class="image-preview" />
+                    <button onclick="uploadSearchImage()" class="image-upload-btn">Save URL</button>
+                    <button onclick="deleteSearchImage()" class="image-delete-btn">✕</button>
                   </div>
                 </div>
-                <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:8px;">Direct image URLs only (e.g. ends in .jpg, .png).</div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:8px;">Direct image URLs only (ends in .jpg, .png). "Search Image" will apply to ALL movie/download plugins automatically.</div>
               </div>
 
               <!-- Save Button -->
@@ -3125,7 +3125,7 @@
       window.submitRegister = async function() { clearAuthError(); const name = document.getElementById("regName").value.trim(); const email = document.getElementById("regEmail").value.trim(); const password = document.getElementById("regPassword").value; const confirm = document.getElementById("regConfirm").value; if (!name || !email || !password) return showAuthError("All fields are required."); if (password !== confirm) return showAuthError("Passwords do not match."); if (password.length < 6) return showAuthError("Password must be at least 6 characters."); setAuthBusy(true); try { const res = await fetch("/auth/register", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, email, password }), }); const data = await res.json(); if (!data.ok) { showAuthError(data.error || "Registration failed."); return; } closeAuthModal(); if (typeof renderAuth === "function") renderAuth(data.user); } catch { showAuthError("Network error. Try again."); } finally { setAuthBusy(false); } };
       document.addEventListener("keydown", e => { if (e.key === "Escape") closeAuthModal(); });
 
-     // ===== SETTINGS PAGE JS =====
+    // ===== SETTINGS PAGE JS =====
       let settingsToken = localStorage.getItem("settingsToken") || "";
       let settingsSessionId = "";
 
@@ -3197,8 +3197,8 @@
           const imageMap = {};
           if(images && images.length) { images.forEach(img => { imageMap[img.key] = img; }); }
           
-          const previewMap = { alive: { img: "alivePreview", input: "aliveUrl" }, menu_header: { img: "menuPreview", input: "menu_headerUrl" }, song: { img: "songPreview", input: "songUrl" } };
-          
+          // Alive & Menu Headers load කිරීම
+          const previewMap = { alive: { img: "alivePreview", input: "aliveUrl" }, menu_header: { img: "menuPreview", input: "menu_headerUrl" } };
           for (const [key, map] of Object.entries(previewMap)) {
             const img = document.getElementById(map.img);
             const input = document.getElementById(map.input);
@@ -3210,6 +3210,19 @@
                 if(img) { img.style.display = "none"; }
             }
           }
+
+          // Universal Search Image එක load කිරීම (කෝක හරි එකක් අරන් පෙන්නනවා)
+          const searchImgUrl = imageMap["cinesubz_header"]?.data || imageMap["anime_header"]?.data || imageMap["cartoon_header"]?.data || "";
+          const searchImg = document.getElementById("searchPreview");
+          const searchInput = document.getElementById("search_imageUrl");
+          if (searchImgUrl) {
+              if(searchInput) searchInput.value = searchImgUrl;
+              if(searchImg) { searchImg.src = searchImgUrl; searchImg.style.display = "block"; }
+          } else {
+              if(searchInput) searchInput.value = "";
+              if(searchImg) { searchImg.style.display = "none"; }
+          }
+
         } catch (e) { alert("Failed to load settings: " + e.message); }
       }
 
@@ -3224,6 +3237,7 @@
         }
       }
 
+      // Normal upload (Alive & Menu)
       async function uploadImage(key) {
         if (!settingsToken) return alert("Please verify your phone first.");
         const input = document.getElementById(key + "Url");
@@ -3246,6 +3260,40 @@
         } catch (e) { alert("Save failed: " + e.message); } finally { btn.disabled = false; btn.textContent = "Save URL"; }
       }
 
+      // Universal Search Image Upload (Trick එක)
+      async function uploadSearchImage() {
+        if (!settingsToken) return alert("Please verify your phone first.");
+        const input = document.getElementById("search_imageUrl");
+        const dataUrl = input.value.trim();
+        if (!dataUrl) return alert("Please enter an image URL.");
+        
+        const btn = input.parentElement.querySelector(".image-upload-btn"); 
+        btn.disabled = true; btn.textContent = "Saving All...";
+        
+        // මේ keys ටිකටම එකපාර URL එක සේව් කරනවා
+        const keysToUpdate = ["anime_header", "tiktok_header", "cinesubz_header", "cartoon_header", "education_header", "song"];
+        
+        try {
+          let hasError = false;
+          for (const key of keysToUpdate) {
+            const res = await fetch(`${window.SETTINGS_API_URL}/api/settings`, { 
+                method: "POST", 
+                headers: { "Content-Type": "application/json", "x-settings-token": settingsToken }, 
+                body: JSON.stringify({ images: { [key]: dataUrl } }), 
+            });
+            if (res.status === 401) { handleUnauthorized(); return; }
+            const data = await res.json();
+            if (!data.ok) hasError = true;
+          }
+          
+          if (hasError) return alert("Some images failed to save.");
+          
+          document.getElementById("settingsSaveStatus").textContent = "✅ Universal Search Image saved to all plugins!"; 
+          document.getElementById("settingsSaveStatus").style.color = "#00ffd5";
+        } catch (e) { alert("Save failed: " + e.message); } finally { btn.disabled = false; btn.textContent = "Save URL"; }
+      }
+
+      // Normal Delete
       async function deleteImage(key) {
         if (!settingsToken) return alert("Please verify your phone first.");
         if (!confirm(`Delete this ${key} URL?`)) return;
@@ -3255,9 +3303,8 @@
           const data = await res.json();
           if (!data.ok) return alert("Failed to delete URL.");
           
-          const previewMap = { alive: { img: "alivePreview", input: "aliveUrl" }, menu_header: { img: "menuPreview", input: "menu_headerUrl" }, song: { img: "songPreview", input: "songUrl" } };
+          const previewMap = { alive: { img: "alivePreview", input: "aliveUrl" }, menu_header: { img: "menuPreview", input: "menu_headerUrl" } };
           const map = previewMap[key];
-          
           if (map) { 
               const img = document.getElementById(map.img);
               const input = document.getElementById(map.input);
@@ -3265,6 +3312,28 @@
               if(input) { input.value = ""; }
           }
           document.getElementById("settingsSaveStatus").textContent = "✅ URL deleted."; document.getElementById("settingsSaveStatus").style.color = "#ff6b6b";
+        } catch (e) { alert("Delete failed: " + e.message); }
+      }
+
+      // Universal Search Image Delete
+      async function deleteSearchImage() {
+        if (!settingsToken) return alert("Please verify your phone first.");
+        if (!confirm(`Delete the Universal Search Image?`)) return;
+        
+        const keysToDelete = ["anime_header", "tiktok_header", "cinesubz_header", "cartoon_header", "education_header", "song"];
+        
+        try {
+          for (const key of keysToDelete) {
+             const res = await fetch(`${window.SETTINGS_API_URL}/api/settings/image/${key}`, { method: "DELETE", headers: { "x-settings-token": settingsToken }, });
+             if (res.status === 401) { handleUnauthorized(); return; }
+          }
+          
+          const img = document.getElementById("searchPreview");
+          const input = document.getElementById("search_imageUrl");
+          if(img) { img.src = ""; img.style.display = "none"; }
+          if(input) { input.value = ""; }
+              
+          document.getElementById("settingsSaveStatus").textContent = "✅ Universal Search Image deleted."; document.getElementById("settingsSaveStatus").style.color = "#ff6b6b";
         } catch (e) { alert("Delete failed: " + e.message); }
       }
 
@@ -3305,6 +3374,7 @@
           await loadSettings();
           if(settingsToken) { document.getElementById("settingsAuth").style.display = "none"; document.getElementById("settingsPanel").style.display = "block"; document.getElementById("settingsStatus").textContent = "✅ Already authenticated. Settings loaded."; }
         }
-      });    </script>
+      });
+    </script>
   </body>
 </html>
