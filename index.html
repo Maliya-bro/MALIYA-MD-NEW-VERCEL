@@ -2682,7 +2682,17 @@
                   <label class="toggle-label"><input type="checkbox" id="autoDownloadStatus" /> 📥 Status Download</label>
                   <label class="toggle-label"><input type="checkbox" id="autoReactMsg" /> 💖 Auto Msg React</label>
                   <label class="toggle-label"><input type="checkbox" id="silentAutomation" /> 🤫 Silent Automation</label>
+                  <label class="toggle-label"><input type="checkbox" id="customAutoReply" onchange="toggleCustomReplyUI()" /> 💬 Custom Reply</label>
                 </div>
+              </div>
+              <div id="customReplySection" class="settings-group" style="display:none; margin-top:16px; border: 1px solid var(--accent);">
+                <label class="settings-label" style="color: var(--accent);">📝 Custom Auto Reply Rules</label>
+                <div style="display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap;">
+                  <input type="text" id="crReceive" class="input-field" placeholder="Receive (e.g. hi, hello, hey)" style="flex:1; margin-bottom:0;" />
+                  <input type="text" id="crSend" class="input-field" placeholder="Reply (e.g. Hello there!)" style="flex:2; margin-bottom:0;" />
+                  <button type="button" class="action-btn" onclick="addCustomReply()" style="width:auto; padding:12px 18px; border-radius:8px;">Add</button>
+                </div>
+                <div id="crList" style="display:flex; flex-direction:column; gap:8px;"></div>
               </div>
 
             <!-- Image URL Uploads -->
@@ -3195,12 +3205,18 @@
           if(document.getElementById("alwaysPresence")) document.getElementById("alwaysPresence").value = settings.always_presence || "off";
 
           const toggles = ['btnsEnabled', 'autoMsg', 'seenAllMsg', 'antiSpam', 'antiDelete', 'autoRejectCalls', 'autoStatusSeen', 'autoStatusReact', 'autoDownloadStatus', 'autoReactMsg', 'silentAutomation'];
-          const dbKeys = ['btns_enabled', 'auto_msg', 'seen_all_msg', 'anti_spam', 'anti_delete', 'auto_reject_calls', 'auto_status_seen', 'auto_status_react', 'auto_download_status', 'auto_react_msg', 'silent_automation'];
+          const dbKeys = ['btns_enabled', 'auto_msg', 'seen_all_msg', 'anti_spam', 'anti_delete', 'auto_reject_calls', 'auto_status_seen', 'auto_status_react', 'auto_download_status', 'auto_react_msg', 'silent_automation', 'custom_auto_reply'];
           
           toggles.forEach((id, index) => {
               const el = document.getElementById(id);
               if(el) el.checked = !!settings[dbKeys[index]];
           });
+          // 🔥 Load Custom Reply Rules
+          if(settings.custom_reply_rules) {
+            customReplyRules = settings.custom_reply_rules;
+          }
+          toggleCustomReplyUI();
+          renderCustomReplies();
 
           const imageMap = {};
           if(images && images.length) { images.forEach(img => { imageMap[img.key] = img; }); }
@@ -3370,6 +3386,8 @@
           auto_download_status: document.getElementById("autoDownloadStatus")?.checked || false,
           auto_react_msg: document.getElementById("autoReactMsg")?.checked || false,
           silent_automation: document.getElementById("silentAutomation")?.checked || false,
+          custom_auto_reply: document.getElementById("customAutoReply")?.checked || false,
+          custom_reply_rules: customReplyRules,
         };
         const btn = document.getElementById("settingsSaveBtn"); const statusEl = document.getElementById("settingsSaveStatus");
         btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...'; statusEl.textContent = "";
@@ -3390,6 +3408,46 @@
           if(settingsToken) { document.getElementById("settingsAuth").style.display = "none"; document.getElementById("settingsPanel").style.display = "block"; document.getElementById("settingsStatus").textContent = "✅ Already authenticated. Settings loaded."; }
         }
       });
+      // 🔥 Custom Reply JS Logic
+      let customReplyRules = [];
+
+      function toggleCustomReplyUI() {
+        const isChecked = document.getElementById("customAutoReply").checked;
+        document.getElementById("customReplySection").style.display = isChecked ? "block" : "none";
+      }
+
+      function renderCustomReplies() {
+        const list = document.getElementById("crList");
+        list.innerHTML = "";
+        customReplyRules.forEach((rule, index) => {
+          const div = document.createElement("div");
+          div.style.cssText = "display:flex; justify-content:space-between; align-items:center; background:rgba(0,180,255,0.05); padding:10px 14px; border-radius:8px; border:1px solid rgba(0,180,255,0.15); font-size:13px;";
+          div.innerHTML = `
+            <div>
+               <div style="color:var(--accent); font-weight:bold; margin-bottom:4px;">📥 If received: <span style="color:#fff;font-weight:normal;">${rule.triggers}</span></div>
+               <div style="color:#00ffd5; font-weight:bold;">📤 Reply: <span style="color:#fff;font-weight:normal;">${rule.reply}</span></div>
+            </div>
+            <button type="button" onclick="removeCustomReply(${index})" style="background:rgba(255,51,102,0.15); border:1px solid rgba(255,51,102,0.3); color:#ff3366; padding:6px 12px; border-radius:6px; cursor:pointer;">✕</button>
+          `;
+          list.appendChild(div);
+        });
+      }
+
+      function addCustomReply() {
+        const recv = document.getElementById("crReceive").value.trim();
+        const send = document.getElementById("crSend").value.trim();
+        if (!recv || !send) return alert("Please fill both Receive and Reply fields.");
+        
+        customReplyRules.push({ triggers: recv, reply: send });
+        document.getElementById("crReceive").value = "";
+        document.getElementById("crSend").value = "";
+        renderCustomReplies();
+      }
+
+      function removeCustomReply(index) {
+        customReplyRules.splice(index, 1);
+        renderCustomReplies();
+      }
     </script>
   </body>
 </html>
