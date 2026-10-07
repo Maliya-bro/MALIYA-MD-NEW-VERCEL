@@ -3143,311 +3143,320 @@
       window.submitRegister = async function() { clearAuthError(); const name = document.getElementById("regName").value.trim(); const email = document.getElementById("regEmail").value.trim(); const password = document.getElementById("regPassword").value; const confirm = document.getElementById("regConfirm").value; if (!name || !email || !password) return showAuthError("All fields are required."); if (password !== confirm) return showAuthError("Passwords do not match."); if (password.length < 6) return showAuthError("Password must be at least 6 characters."); setAuthBusy(true); try { const res = await fetch("/auth/register", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, email, password }), }); const data = await res.json(); if (!data.ok) { showAuthError(data.error || "Registration failed."); return; } closeAuthModal(); if (typeof renderAuth === "function") renderAuth(data.user); } catch { showAuthError("Network error. Try again."); } finally { setAuthBusy(false); } };
       document.addEventListener("keydown", e => { if (e.key === "Escape") closeAuthModal(); });
 
-    // ===== SETTINGS PAGE JS =====
-      let settingsToken = localStorage.getItem("settingsToken") || "";
-      let settingsSessionId = "";
+   // ===== SETTINGS PAGE JS =====
+  let settingsToken = localStorage.getItem("settingsToken") || "";
+  let settingsSessionId = "";
 
-      function handleUnauthorized() {
-        settingsToken = "";
-        localStorage.removeItem("settingsToken");
-        document.getElementById("settingsPanel").style.display = "none";
-        document.getElementById("settingsCodeSection").style.display = "none";
-        document.getElementById("settingsAuth").style.display = "block";
-        document.getElementById("settingsStatus").textContent = "⚠️ Session expired. Please verify your number again.";
+  function handleUnauthorized() {
+    settingsToken = "";
+    localStorage.removeItem("settingsToken");
+    document.getElementById("settingsPanel").style.display = "none";
+    document.getElementById("settingsCodeSection").style.display = "none";
+    document.getElementById("settingsAuth").style.display = "block";
+    document.getElementById("settingsStatus").textContent = "⚠️ Session expired. Please verify your number again.";
+  }
+
+  async function requestSettingsCode() {
+    const phone = document.getElementById("settingsPhone").value.replace(/[^0-9]/g, "");
+    if (!phone || phone.length < 7) { alert("Please enter a valid WhatsApp number."); return; }
+    const btn = document.getElementById("settingsVerifyBtn"); btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
+    try {
+      const res = await fetch(`${window.SETTINGS_API_URL}/api/settings/request-code`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phone }), });
+      const data = await res.json();
+      if (!data.ok) { alert(data.error || "Failed to send code."); return; }
+      settingsSessionId = data.sessionId;
+      document.getElementById("settingsCodeSection").style.display = "block";
+      document.getElementById("settingsStatus").textContent = `📱 Code sent to ${data.phone}`;
+      document.getElementById("settingsCodeError").textContent = ""; document.getElementById("settingsCode").focus();
+    } catch (e) { alert("Network error. Please try again."); } finally { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> Verify'; }
+  }
+
+  async function verifySettingsCode() {
+    const code = document.getElementById("settingsCode").value.trim();
+    if (!code || code.length < 4) { document.getElementById("settingsCodeError").textContent = "Please enter the 6-digit code."; return; }
+    if (!settingsSessionId) { document.getElementById("settingsCodeError").textContent = "Session not found. Request a new code."; return; }
+    const btn = document.querySelector("#settingsCodeSection .action-btn"); btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verifying...';
+    try {
+      const res = await fetch(`${window.SETTINGS_API_URL}/api/settings/verify-code`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sessionId: settingsSessionId, code }), });
+      const data = await res.json();
+      if (!data.ok) { document.getElementById("settingsCodeError").textContent = data.error || "Invalid code."; return; }
+      settingsToken = data.token; localStorage.setItem("settingsToken", data.token);
+      document.getElementById("settingsCodeError").textContent = "✅ Verified! Loading settings...";
+      await loadSettings();
+      if(settingsToken) { document.getElementById("settingsAuth").style.display = "none"; document.getElementById("settingsPanel").style.display = "block"; document.getElementById("settingsStatus").textContent = "✅ Settings loaded. Make your changes below."; }
+    } catch (e) { document.getElementById("settingsCodeError").textContent = "Network error. Please try again."; } finally { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-key"></i> Verify'; }
+  }
+
+  async function loadSettings() {
+    if (!settingsToken) return;
+    try {
+      const res = await fetch(`${window.SETTINGS_API_URL}/api/settings`, { headers: { "x-settings-token": settingsToken }, });
+      if (res.status === 401) { handleUnauthorized(); return; }
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) { throw new Error("Server Error. API is updating..."); }
+      const data = await res.json();
+      if (!data.ok) return alert(data.error || "Failed to load settings.");
+
+      const { settings, images } = data;
+      
+      if(document.getElementById("botMode")) document.getElementById("botMode").value = settings.mode || "public";
+      if(document.getElementById("workScope")) document.getElementById("workScope").value = settings.work_scope || "private";
+      if(document.getElementById("autoReactMode")) document.getElementById("autoReactMode").value = settings.auto_react_mode || "all";
+      if(document.getElementById("alwaysPresence")) document.getElementById("alwaysPresence").value = settings.always_presence || "off";
+      
+      // 🔥 Bot Name එකතු කළා
+      if (document.getElementById("botNameInput")) {
+        document.getElementById("botNameInput").value = settings.bot_name || "𝙼𝙰𝙻𝙸𝚈𝙰-𝙼𝙳 𝙼𝙸𝙽𝙸";
       }
 
-      async function requestSettingsCode() {
-        const phone = document.getElementById("settingsPhone").value.replace(/[^0-9]/g, "");
-        if (!phone || phone.length < 7) { alert("Please enter a valid WhatsApp number."); return; }
-        const btn = document.getElementById("settingsVerifyBtn"); btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
-        try {
-          const res = await fetch(`${window.SETTINGS_API_URL}/api/settings/request-code`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phone }), });
-          const data = await res.json();
-          if (!data.ok) { alert(data.error || "Failed to send code."); return; }
-          settingsSessionId = data.sessionId;
-          document.getElementById("settingsCodeSection").style.display = "block";
-          document.getElementById("settingsStatus").textContent = `📱 Code sent to ${data.phone}`;
-          document.getElementById("settingsCodeError").textContent = ""; document.getElementById("settingsCode").focus();
-        } catch (e) { alert("Network error. Please try again."); } finally { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> Verify'; }
+      const toggles = ['btnsEnabled', 'autoMsg', 'seenAllMsg', 'antiSpam', 'antiDelete', 'autoRejectCalls', 'autoStatusSeen', 'autoStatusReact', 'autoDownloadStatus', 'autoReactMsg', 'silentAutomation'];
+      const dbKeys = ['btns_enabled', 'auto_msg', 'seen_all_msg', 'anti_spam', 'anti_delete', 'auto_reject_calls', 'auto_status_seen', 'auto_status_react', 'auto_download_status', 'auto_react_msg', 'silent_automation', 'custom_auto_reply'];
+      
+      toggles.forEach((id, index) => {
+          const el = document.getElementById(id);
+          if(el) el.checked = !!settings[dbKeys[index]];
+      });
+      // 🔥 Load Custom Reply Rules
+      if(settings.custom_reply_rules) {
+        customReplyRules = settings.custom_reply_rules;
       }
+      toggleCustomReplyUI();
+      renderCustomReplies();
 
-      async function verifySettingsCode() {
-        const code = document.getElementById("settingsCode").value.trim();
-        if (!code || code.length < 4) { document.getElementById("settingsCodeError").textContent = "Please enter the 6-digit code."; return; }
-        if (!settingsSessionId) { document.getElementById("settingsCodeError").textContent = "Session not found. Request a new code."; return; }
-        const btn = document.querySelector("#settingsCodeSection .action-btn"); btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verifying...';
-        try {
-          const res = await fetch(`${window.SETTINGS_API_URL}/api/settings/verify-code`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sessionId: settingsSessionId, code }), });
-          const data = await res.json();
-          if (!data.ok) { document.getElementById("settingsCodeError").textContent = data.error || "Invalid code."; return; }
-          settingsToken = data.token; localStorage.setItem("settingsToken", data.token);
-          document.getElementById("settingsCodeError").textContent = "✅ Verified! Loading settings...";
-          await loadSettings();
-          if(settingsToken) { document.getElementById("settingsAuth").style.display = "none"; document.getElementById("settingsPanel").style.display = "block"; document.getElementById("settingsStatus").textContent = "✅ Settings loaded. Make your changes below."; }
-        } catch (e) { document.getElementById("settingsCodeError").textContent = "Network error. Please try again."; } finally { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-key"></i> Verify'; }
-      }
-
-      async function loadSettings() {
-        if (!settingsToken) return;
-        try {
-          const res = await fetch(`${window.SETTINGS_API_URL}/api/settings`, { headers: { "x-settings-token": settingsToken }, });
-          if (res.status === 401) { handleUnauthorized(); return; }
-          const contentType = res.headers.get("content-type");
-          if (!contentType || !contentType.includes("application/json")) { throw new Error("Server Error. API is updating..."); }
-          const data = await res.json();
-          if (!data.ok) return alert(data.error || "Failed to load settings.");
-
-          const { settings, images } = data;
-          
-          if(document.getElementById("botMode")) document.getElementById("botMode").value = settings.mode || "public";
-          if(document.getElementById("workScope")) document.getElementById("workScope").value = settings.work_scope || "private";
-          if(document.getElementById("autoReactMode")) document.getElementById("autoReactMode").value = settings.auto_react_mode || "all";
-          if(document.getElementById("alwaysPresence")) document.getElementById("alwaysPresence").value = settings.always_presence || "off";
-
-          const toggles = ['btnsEnabled', 'autoMsg', 'seenAllMsg', 'antiSpam', 'antiDelete', 'autoRejectCalls', 'autoStatusSeen', 'autoStatusReact', 'autoDownloadStatus', 'autoReactMsg', 'silentAutomation'];
-          const dbKeys = ['btns_enabled', 'auto_msg', 'seen_all_msg', 'anti_spam', 'anti_delete', 'auto_reject_calls', 'auto_status_seen', 'auto_status_react', 'auto_download_status', 'auto_react_msg', 'silent_automation', 'custom_auto_reply'];
-          
-          toggles.forEach((id, index) => {
-              const el = document.getElementById(id);
-              if(el) el.checked = !!settings[dbKeys[index]];
-          });
-          // 🔥 Load Custom Reply Rules
-          if(settings.custom_reply_rules) {
-            customReplyRules = settings.custom_reply_rules;
-          }
-          toggleCustomReplyUI();
-          renderCustomReplies();
-
-          const imageMap = {};
-          if(images && images.length) { images.forEach(img => { imageMap[img.key] = img; }); }
-          
-          // Alive, Menu, & Settings Headers load කිරීම
-          const previewMap = { 
-            alive: { img: "alivePreview", input: "aliveUrl" }, 
-            menu_header: { img: "menuPreview", input: "menu_headerUrl" },
-            settings_header: { img: "settingsPreview", input: "settings_headerUrl" } // අලුත් එක!
-          };
-          for (const [key, map] of Object.entries(previewMap)) {
-            const img = document.getElementById(map.img);
-            const input = document.getElementById(map.input);
-            if (imageMap[key] && imageMap[key].data) {
-                if(input) input.value = imageMap[key].data;
-                if(img) { img.src = imageMap[key].data; img.style.display = "block"; }
-            } else {
-                if(input) input.value = "";
-                if(img) { img.style.display = "none"; }
-            }
-          }
-
-          // Universal Search Image එක load කිරීම
-          const searchImgUrl = imageMap["cinesubz_header"]?.data || imageMap["anime_header"]?.data || imageMap["cartoon_header"]?.data || "";
-          const searchImg = document.getElementById("searchPreview");
-          const searchInput = document.getElementById("search_imageUrl");
-          if (searchImgUrl) {
-              if(searchInput) searchInput.value = searchImgUrl;
-              if(searchImg) { searchImg.src = searchImgUrl; searchImg.style.display = "block"; }
-          } else {
-              if(searchInput) searchInput.value = "";
-              if(searchImg) { searchImg.style.display = "none"; }
-          }
-
-        } catch (e) { alert("Failed to load settings: " + e.message); }
-      }
-
-      function previewUrl(input, previewId) {
-        const img = document.getElementById(previewId);
-        if (input.value.trim()) {
-            img.src = input.value.trim();
-            img.style.display = "block";
+      const imageMap = {};
+      if(images && images.length) { images.forEach(img => { imageMap[img.key] = img; }); }
+      
+      // Alive, Menu, & Settings Headers load කිරීම
+      const previewMap = { 
+        alive: { img: "alivePreview", input: "aliveUrl" }, 
+        menu_header: { img: "menuPreview", input: "menu_headerUrl" }, 
+        settings_header: { img: "settingsPreview", input: "settings_headerUrl" }
+      };
+      for (const [key, map] of Object.entries(previewMap)) {
+        const img = document.getElementById(map.img);
+        const input = document.getElementById(map.input);
+        if (imageMap[key] && imageMap[key].data) {
+            if(input) input.value = imageMap[key].data;
+            if(img) { img.src = imageMap[key].data; img.style.display = "block"; }
         } else {
-            img.src = "";
-            img.style.display = "none";
+            if(input) input.value = "";
+            if(img) { img.style.display = "none"; }
         }
       }
 
-      // Normal upload
-      async function uploadImage(key) {
-        if (!settingsToken) return alert("Please verify your phone first.");
-        const input = document.getElementById(key + "Url");
-        const dataUrl = input.value.trim();
-        if (!dataUrl) return alert("Please enter an image URL.");
-        
-        const btn = input.parentElement.querySelector(".image-upload-btn"); 
-        btn.disabled = true; btn.textContent = "Saving...";
-        try {
-          const res = await fetch(`${window.SETTINGS_API_URL}/api/settings`, { 
-              method: "POST", 
-              headers: { "Content-Type": "application/json", "x-settings-token": settingsToken }, 
-              body: JSON.stringify({ images: { [key]: dataUrl } }), 
-          });
-          if (res.status === 401) { handleUnauthorized(); return; }
-          const data = await res.json();
-          if (!data.ok) return alert(data.error || "Save failed.");
-          document.getElementById("settingsSaveStatus").textContent = "✅ URL saved successfully!"; 
-          document.getElementById("settingsSaveStatus").style.color = "#00ffd5";
-        } catch (e) { alert("Save failed: " + e.message); } finally { btn.disabled = false; btn.textContent = "Save URL"; }
+      // Universal Search Image එක load කිරීම
+      const searchImgUrl = imageMap["cinesubz_header"]?.data || imageMap["anime_header"]?.data || imageMap["cartoon_header"]?.data || "";
+      const searchImg = document.getElementById("searchPreview");
+      const searchInput = document.getElementById("search_imageUrl");
+      if (searchImgUrl) {
+          if(searchInput) searchInput.value = searchImgUrl;
+          if(searchImg) { searchImg.src = searchImgUrl; searchImg.style.display = "block"; }
+      } else {
+          if(searchInput) searchInput.value = "";
+          if(searchImg) { searchImg.style.display = "none"; }
       }
 
-      // Universal Search Image Upload
-      async function uploadSearchImage() {
-        if (!settingsToken) return alert("Please verify your phone first.");
-        const input = document.getElementById("search_imageUrl");
-        const dataUrl = input.value.trim();
-        if (!dataUrl) return alert("Please enter an image URL.");
-        
-        const btn = input.parentElement.querySelector(".image-upload-btn"); 
-        btn.disabled = true; btn.textContent = "Saving All...";
-        
-        const keysToUpdate = ["anime_header", "tiktok_header", "cinesubz_header", "cartoon_header", "education_header", "song"];
-        
-        try {
-          let hasError = false;
-          for (const key of keysToUpdate) {
-            const res = await fetch(`${window.SETTINGS_API_URL}/api/settings`, { 
-                method: "POST", 
-                headers: { "Content-Type": "application/json", "x-settings-token": settingsToken }, 
-                body: JSON.stringify({ images: { [key]: dataUrl } }), 
-            });
-            if (res.status === 401) { handleUnauthorized(); return; }
-            const data = await res.json();
-            if (!data.ok) hasError = true;
-          }
-          
-          if (hasError) return alert("Some images failed to save.");
-          
-          document.getElementById("settingsSaveStatus").textContent = "✅ Universal Search Image saved to all plugins!"; 
-          document.getElementById("settingsSaveStatus").style.color = "#00ffd5";
-        } catch (e) { alert("Save failed: " + e.message); } finally { btn.disabled = false; btn.textContent = "Save URL"; }
-      }
+    } catch (e) { alert("Failed to load settings: " + e.message); }
+  }
 
-      // Normal Delete
-      async function deleteImage(key) {
-        if (!settingsToken) return alert("Please verify your phone first.");
-        if (!confirm(`Delete this ${key} URL?`)) return;
-        try {
-          const res = await fetch(`${window.SETTINGS_API_URL}/api/settings/image/${key}`, { method: "DELETE", headers: { "x-settings-token": settingsToken }, });
-          if (res.status === 401) { handleUnauthorized(); return; }
-          const data = await res.json();
-          if (!data.ok) return alert("Failed to delete URL.");
-          
-          const previewMap = { 
-            alive: { img: "alivePreview", input: "aliveUrl" }, 
-            menu_header: { img: "menuPreview", input: "menu_headerUrl" },
-            settings_header: { img: "settingsPreview", input: "settings_headerUrl" }
-          };
-          const map = previewMap[key];
-          if (map) { 
-              const img = document.getElementById(map.img);
-              const input = document.getElementById(map.input);
-              if(img) { img.src = ""; img.style.display = "none"; }
-              if(input) { input.value = ""; }
-          }
-          document.getElementById("settingsSaveStatus").textContent = "✅ URL deleted."; document.getElementById("settingsSaveStatus").style.color = "#ff6b6b";
-        } catch (e) { alert("Delete failed: " + e.message); }
-      }
+  function previewUrl(input, previewId) {
+    const img = document.getElementById(previewId);
+    if (input.value.trim()) {
+        img.src = input.value.trim();
+        img.style.display = "block";
+    } else {
+        img.src = "";
+        img.style.display = "none";
+    }
+  }
 
-      // Universal Search Image Delete
-      async function deleteSearchImage() {
-        if (!settingsToken) return alert("Please verify your phone first.");
-        if (!confirm(`Delete the Universal Search Image?`)) return;
-        
-        const keysToDelete = ["anime_header", "tiktok_header", "cinesubz_header", "cartoon_header", "education_header", "song"];
-        
-        try {
-          for (const key of keysToDelete) {
-             const res = await fetch(`${window.SETTINGS_API_URL}/api/settings/image/${key}`, { method: "DELETE", headers: { "x-settings-token": settingsToken }, });
-             if (res.status === 401) { handleUnauthorized(); return; }
-          }
-          
-          const img = document.getElementById("searchPreview");
-          const input = document.getElementById("search_imageUrl");
+  // Normal upload
+  async function uploadImage(key) {
+    if (!settingsToken) return alert("Please verify your phone first.");
+    const input = document.getElementById(key + "Url");
+    const dataUrl = input.value.trim();
+    if (!dataUrl) return alert("Please enter an image URL.");
+    
+    const btn = input.parentElement.querySelector(".image-upload-btn"); 
+    btn.disabled = true; btn.textContent = "Saving...";
+    try {
+      const res = await fetch(`${window.SETTINGS_API_URL}/api/settings`, { 
+          method: "POST", 
+          headers: { "Content-Type": "application/json", "x-settings-token": settingsToken }, 
+          body: JSON.stringify({ images: { [key]: dataUrl } }), 
+      });
+      if (res.status === 401) { handleUnauthorized(); return; }
+      const data = await res.json();
+      if (!data.ok) return alert(data.error || "Save failed.");
+      document.getElementById("settingsSaveStatus").textContent = "✅ URL saved successfully!"; 
+      document.getElementById("settingsSaveStatus").style.color = "#00ffd5";
+    } catch (e) { alert("Save failed: " + e.message); } finally { btn.disabled = false; btn.textContent = "Save URL"; }
+  }
+
+  // Universal Search Image Upload
+  async function uploadSearchImage() {
+    if (!settingsToken) return alert("Please verify your phone first.");
+    const input = document.getElementById("search_imageUrl");
+    const dataUrl = input.value.trim();
+    if (!dataUrl) return alert("Please enter an image URL.");
+    
+    const btn = input.parentElement.querySelector(".image-upload-btn"); 
+    btn.disabled = true; btn.textContent = "Saving All...";
+    
+    const keysToUpdate = ["anime_header", "tiktok_header", "cinesubz_header", "cartoon_header", "education_header", "song"];
+    
+    try {
+      let hasError = false;
+      for (const key of keysToUpdate) {
+        const res = await fetch(`${window.SETTINGS_API_URL}/api/settings`, { 
+            method: "POST", 
+            headers: { "Content-Type": "application/json", "x-settings-token": settingsToken }, 
+            body: JSON.stringify({ images: { [key]: dataUrl } }), 
+        });
+        if (res.status === 401) { handleUnauthorized(); return; }
+        const data = await res.json();
+        if (!data.ok) hasError = true;
+      }
+      
+      if (hasError) return alert("Some images failed to save.");
+      
+      document.getElementById("settingsSaveStatus").textContent = "✅ Universal Search Image saved to all plugins!"; 
+      document.getElementById("settingsSaveStatus").style.color = "#00ffd5";
+    } catch (e) { alert("Save failed: " + e.message); } finally { btn.disabled = false; btn.textContent = "Save URL"; }
+  }
+
+  // Normal Delete
+  async function deleteImage(key) {
+    if (!settingsToken) return alert("Please verify your phone first.");
+    if (!confirm(`Delete this ${key} URL?`)) return;
+    try {
+      const res = await fetch(`${window.SETTINGS_API_URL}/api/settings/image/${key}`, { method: "DELETE", headers: { "x-settings-token": settingsToken }, });
+      if (res.status === 401) { handleUnauthorized(); return; }
+      const data = await res.json();
+      if (!data.ok) return alert("Failed to delete URL.");
+      
+      const previewMap = { 
+        alive: { img: "alivePreview", input: "aliveUrl" }, 
+        menu_header: { img: "menuPreview", input: "menu_headerUrl" }, 
+        settings_header: { img: "settingsPreview", input: "settings_headerUrl" }
+      };
+      const map = previewMap[key];
+      if (map) { 
+          const img = document.getElementById(map.img);
+          const input = document.getElementById(map.input);
           if(img) { img.src = ""; img.style.display = "none"; }
           if(input) { input.value = ""; }
-              
-          document.getElementById("settingsSaveStatus").textContent = "✅ Universal Search Image deleted."; document.getElementById("settingsSaveStatus").style.color = "#ff6b6b";
-        } catch (e) { alert("Delete failed: " + e.message); }
       }
+      document.getElementById("settingsSaveStatus").textContent = "✅ URL deleted."; document.getElementById("settingsSaveStatus").style.color = "#ff6b6b";
+    } catch (e) { alert("Delete failed: " + e.message); }
+  }
 
-      async function saveAllSettings() {
-        if (!settingsToken) return alert("Please verify your phone first.");
-        const settings = {
-          mode: document.getElementById("botMode")?.value || "public",
-          work_scope: document.getElementById("workScope")?.value || "private",
-          auto_react_mode: document.getElementById("autoReactMode")?.value || "all",
-          always_presence: document.getElementById("alwaysPresence")?.value || "off",
-          btns_enabled: document.getElementById("btnsEnabled")?.checked || false,
-          auto_msg: document.getElementById("autoMsg")?.checked || false,
-          seen_all_msg: document.getElementById("seenAllMsg")?.checked || false,
-          anti_spam: document.getElementById("antiSpam")?.checked || false,
-          anti_delete: document.getElementById("antiDelete")?.checked || false,
-          auto_reject_calls: document.getElementById("autoRejectCalls")?.checked || false,
-          auto_status_seen: document.getElementById("autoStatusSeen")?.checked || false,
-          auto_status_react: document.getElementById("autoStatusReact")?.checked || false,
-          auto_download_status: document.getElementById("autoDownloadStatus")?.checked || false,
-          auto_react_msg: document.getElementById("autoReactMsg")?.checked || false,
-          silent_automation: document.getElementById("silentAutomation")?.checked || false,
-          custom_auto_reply: document.getElementById("customAutoReply")?.checked || false,
-          custom_reply_rules: customReplyRules,
-        };
-        const btn = document.getElementById("settingsSaveBtn"); const statusEl = document.getElementById("settingsSaveStatus");
-        btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...'; statusEl.textContent = "";
-        try {
-          const res = await fetch(`${window.SETTINGS_API_URL}/api/settings`, { method: "POST", headers: { "Content-Type": "application/json", "x-settings-token": settingsToken, }, body: JSON.stringify({ settings }), });
-          if (res.status === 401) { handleUnauthorized(); return; }
-          const contentType = res.headers.get("content-type");
-          if (!contentType || !contentType.includes("application/json")) { throw new Error("Server error. Please wait a minute and try again."); }
-          const data = await res.json();
-          if (!data.ok) { statusEl.textContent = "❌ " + (data.error || "Save failed."); statusEl.style.color = "#ff6b6b"; return; }
-          statusEl.textContent = "✅ All settings saved successfully!"; statusEl.style.color = "#00ffd5";
-        } catch (e) { statusEl.textContent = "❌ " + e.message; statusEl.style.color = "#ff6b6b"; } finally { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save All Changes'; }
+  // Universal Search Image Delete
+  async function deleteSearchImage() {
+    if (!settingsToken) return alert("Please verify your phone first.");
+    if (!confirm(`Delete the Universal Search Image?`)) return;
+    
+    const keysToDelete = ["anime_header", "tiktok_header", "cinesubz_header", "cartoon_header", "education_header", "song"];
+    
+    try {
+      for (const key of keysToDelete) {
+         const res = await fetch(`${window.SETTINGS_API_URL}/api/settings/image/${key}`, { method: "DELETE", headers: { "x-settings-token": settingsToken }, });
+         if (res.status === 401) { handleUnauthorized(); return; }
       }
+      
+      const img = document.getElementById("searchPreview");
+      const input = document.getElementById("search_imageUrl");
+      if(img) { img.src = ""; img.style.display = "none"; }
+      if(input) { input.value = ""; }
+          
+      document.getElementById("settingsSaveStatus").textContent = "✅ Universal Search Image deleted."; document.getElementById("settingsSaveStatus").style.color = "#ff6b6b";
+    } catch (e) { alert("Delete failed: " + e.message); }
+  }
 
-      document.addEventListener("DOMContentLoaded", async function() {
-        if (settingsToken) {
-          await loadSettings();
-          if(settingsToken) { document.getElementById("settingsAuth").style.display = "none"; document.getElementById("settingsPanel").style.display = "block"; document.getElementById("settingsStatus").textContent = "✅ Already authenticated. Settings loaded."; }
-        }
-      });
-      // 🔥 Custom Reply JS Logic
-      let customReplyRules = [];
+  async function saveAllSettings() {
+    if (!settingsToken) return alert("Please verify your phone first.");
+    const settings = {
+      mode: document.getElementById("botMode")?.value || "public",
+      work_scope: document.getElementById("workScope")?.value || "private",
+      auto_react_mode: document.getElementById("autoReactMode")?.value || "all",
+      always_presence: document.getElementById("alwaysPresence")?.value || "off",
+      bot_name: document.getElementById("botNameInput")?.value?.trim() || "𝙼𝙰𝙻𝙸𝚈𝙰-𝙼𝙳 𝙼𝙸𝙽𝙸", // 🔥 Bot Name Save එකතු කළා
+      btns_enabled: document.getElementById("btnsEnabled")?.checked || false,
+      auto_msg: document.getElementById("autoMsg")?.checked || false,
+      seen_all_msg: document.getElementById("seenAllMsg")?.checked || false,
+      anti_spam: document.getElementById("antiSpam")?.checked || false,
+      anti_delete: document.getElementById("antiDelete")?.checked || false,
+      auto_reject_calls: document.getElementById("autoRejectCalls")?.checked || false,
+      auto_status_seen: document.getElementById("autoStatusSeen")?.checked || false,
+      auto_status_react: document.getElementById("autoStatusReact")?.checked || false,
+      auto_download_status: document.getElementById("autoDownloadStatus")?.checked || false,
+      auto_react_msg: document.getElementById("autoReactMsg")?.checked || false,
+      silent_automation: document.getElementById("silentAutomation")?.checked || false,
+      custom_auto_reply: document.getElementById("customAutoReply")?.checked || false,
+      custom_reply_rules: customReplyRules,
+    };
+    const btn = document.getElementById("settingsSaveBtn"); const statusEl = document.getElementById("settingsSaveStatus");
+    btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...'; statusEl.textContent = "";
+    try {
+      const res = await fetch(`${window.SETTINGS_API_URL}/api/settings`, { method: "POST", headers: { "Content-Type": "application/json", "x-settings-token": settingsToken, }, body: JSON.stringify({ settings }), });
+      if (res.status === 401) { handleUnauthorized(); return; }
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) { throw new Error("Server error. Please wait a minute and try again."); }
+      const data = await res.json();
+      if (!data.ok) { statusEl.textContent = "❌ " + (data.error || "Save failed."); statusEl.style.color = "#ff6b6b"; return; }
+      statusEl.textContent = "✅ All settings saved successfully!"; statusEl.style.color = "#00ffd5";
+    } catch (e) { statusEl.textContent = "❌ " + e.message; statusEl.style.color = "#ff6b6b"; } finally { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save All Changes'; }
+  }
 
-      function toggleCustomReplyUI() {
-        const isChecked = document.getElementById("customAutoReply").checked;
-        document.getElementById("customReplySection").style.display = isChecked ? "block" : "none";
-      }
+  document.addEventListener("DOMContentLoaded", async function() {
+    if (settingsToken) {
+      await loadSettings();
+      if(settingsToken) { document.getElementById("settingsAuth").style.display = "none"; document.getElementById("settingsPanel").style.display = "block"; document.getElementById("settingsStatus").textContent = "✅ Already authenticated. Settings loaded."; }
+    }
+  });
 
-      function renderCustomReplies() {
-        const list = document.getElementById("crList");
-        list.innerHTML = "";
-        customReplyRules.forEach((rule, index) => {
-          const div = document.createElement("div");
-          div.style.cssText = "display:flex; justify-content:space-between; align-items:center; background:rgba(0,180,255,0.05); padding:10px 14px; border-radius:8px; border:1px solid rgba(0,180,255,0.15); font-size:13px;";
-          div.innerHTML = `
-            <div>
-               <div style="color:var(--accent); font-weight:bold; margin-bottom:4px;">📥 If received: <span style="color:#fff;font-weight:normal;">${rule.triggers}</span></div>
-               <div style="color:#00ffd5; font-weight:bold;">📤 Reply: <span style="color:#fff;font-weight:normal;">${rule.reply}</span></div>
-            </div>
-            <button type="button" onclick="removeCustomReply(${index})" style="background:rgba(255,51,102,0.15); border:1px solid rgba(255,51,102,0.3); color:#ff3366; padding:6px 12px; border-radius:6px; cursor:pointer;">✕</button>
-          `;
-          list.appendChild(div);
-        });
-      }
+  // 🔥 Custom Reply JS Logic
+  let customReplyRules = [];
 
-      function addCustomReply() {
-        const recv = document.getElementById("crReceive").value.trim();
-        const send = document.getElementById("crSend").value.trim();
-        if (!recv || !send) return alert("Please fill both Receive and Reply fields.");
-        
-        customReplyRules.push({ triggers: recv, reply: send });
-        document.getElementById("crReceive").value = "";
-        document.getElementById("crSend").value = "";
-        renderCustomReplies();
-      }
+  function toggleCustomReplyUI() {
+    const isChecked = document.getElementById("customAutoReply")?.checked || false;
+    const sec = document.getElementById("customReplySection");
+    if (sec) sec.style.display = isChecked ? "block" : "none";
+  }
 
-      function removeCustomReply(index) {
-        customReplyRules.splice(index, 1);
-        renderCustomReplies();
-      }
-    </script>
+  function renderCustomReplies() {
+    const list = document.getElementById("crList");
+    if (!list) return;
+    list.innerHTML = "";
+    customReplyRules.forEach((rule, index) => {
+      const div = document.createElement("div");
+      div.style.cssText = "display:flex; justify-content:space-between; align-items:center; background:rgba(0,180,255,0.05); padding:10px 14px; border-radius:8px; border:1px solid rgba(0,180,255,0.15); font-size:13px;";
+      div.innerHTML = `
+        <div>
+           <div style="color:var(--accent); font-weight:bold; margin-bottom:4px;">📥 If received: <span style="color:#fff;font-weight:normal;">${rule.triggers}</span></div>
+           <div style="color:#00ffd5; font-weight:bold;">📤 Reply: <span style="color:#fff;font-weight:normal;">${rule.reply}</span></div>
+        </div>
+        <button type="button" onclick="removeCustomReply(${index})" style="background:rgba(255,51,102,0.15); border:1px solid rgba(255,51,102,0.3); color:#ff3366; padding:6px 12px; border-radius:6px; cursor:pointer;">✕</button>
+      `;
+      list.appendChild(div);
+    });
+  }
+
+  function addCustomReply() {
+    const recv = document.getElementById("crReceive").value.trim();
+    const send = document.getElementById("crSend").value.trim();
+    if (!recv || !send) return alert("Please fill both Receive and Reply fields.");
+    
+    customReplyRules.push({ triggers: recv, reply: send });
+    document.getElementById("crReceive").value = "";
+    document.getElementById("crSend").value = "";
+    renderCustomReplies();
+  }
+
+  function removeCustomReply(index) {
+    customReplyRules.splice(index, 1);
+    renderCustomReplies();
+  }
+</script>
   </body>
 </html>
