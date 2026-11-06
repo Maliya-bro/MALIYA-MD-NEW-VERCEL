@@ -1,0 +1,570 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=Orbitron:wght@700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.0.0-alpha.1/axios.min.js"></script>
+
+<style>
+  :root {
+    --bg: #030712;
+    --card-bg: rgba(8, 16, 36, 0.88);
+    --cyan: #00d9ff;
+    --cyan-glow: rgba(0, 217, 255, 0.4);
+    --blue-power: #0070f3;
+    --border-cyan: rgba(0, 217, 255, 0.22);
+    --text: #f8fafc;
+    --text-muted: #94a3b8;
+    --font-main: 'Plus Jakarta Sans', sans-serif;
+    --font-tech: 'Orbitron', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: var(--font-main);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* ── Kinetic Light Pointer ── */
+  #cursorCore {
+    position: fixed;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--cyan);
+    box-shadow: 0 0 16px var(--cyan);
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    z-index: 99999;
+  }
+
+  #cursorAura {
+    position: fixed;
+    width: 440px;
+    height: 440px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0, 217, 255, 0.12) 0%, transparent 70%);
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    z-index: 99998;
+    transition: transform 0.12s ease-out;
+  }
+
+  /* ── Terminal Stage Container ── */
+  .terminal-layout {
+    width: 100%;
+    max-width: 1020px;
+    display: grid;
+    grid-template-columns: 0.95fr 1.05fr;
+    gap: 32px;
+    align-items: center;
+    position: relative;
+    z-index: 10;
+  }
+
+  /* ── Left Illustration Box ── */
+  .visual-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .svg-bot-hero {
+    width: 100%;
+    max-width: 380px;
+    height: auto;
+    animation: floatVector 4s ease-in-out infinite alternate;
+    filter: drop-shadow(0 25px 35px rgba(0, 0, 0, 0.8));
+  }
+
+  @keyframes floatVector {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-14px); }
+  }
+
+  /* ── Right Pairing Console Card ── */
+  .pairing-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-cyan);
+    border-radius: 30px;
+    padding: 40px;
+    backdrop-filter: blur(24px);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    position: relative;
+  }
+
+  .terminal-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+
+  .return-link {
+    color: var(--cyan);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: transform 0.2s;
+  }
+
+  .return-link:hover {
+    transform: translateX(-3px);
+  }
+
+  .terminal-header {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+
+  .avatar-badge {
+    width: 58px;
+    height: 58px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, var(--cyan), var(--blue-power));
+    margin: 0 auto 14px;
+    display: grid;
+    place-items: center;
+    font-size: 24px;
+    color: #030712;
+    box-shadow: 0 0 30px rgba(0, 217, 255, 0.5);
+  }
+
+  .terminal-header h2 {
+    font-family: var(--font-tech);
+    font-size: 26px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: #fff;
+  }
+
+  .terminal-header h2 span {
+    color: var(--cyan);
+  }
+
+  .terminal-header p {
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  /* Mode Switch Pills */
+  .mode-toggle-group {
+    display: flex;
+    background: rgba(3, 7, 18, 0.6);
+    border: 1px solid rgba(0, 217, 255, 0.15);
+    border-radius: 16px;
+    padding: 5px;
+    margin-bottom: 26px;
+    gap: 6px;
+  }
+
+  .toggle-btn {
+    flex: 1;
+    padding: 11px;
+    border: none;
+    border-radius: 12px;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .toggle-btn.active {
+    background: linear-gradient(135deg, #00d9ff, #0070f3);
+    color: #030712;
+    box-shadow: 0 4px 18px rgba(0, 217, 255, 0.35);
+  }
+
+  /* Form Fields */
+  .phone-input-field {
+    width: 100%;
+    padding: 16px 20px;
+    border-radius: 16px;
+    background: rgba(3, 7, 18, 0.8);
+    border: 1px solid var(--border-cyan);
+    color: #fff;
+    font-size: 16px;
+    font-family: var(--font-mono);
+    letter-spacing: 1px;
+    outline: none;
+    margin-bottom: 18px;
+    text-align: center;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .phone-input-field:focus {
+    border-color: var(--cyan);
+    box-shadow: 0 0 24px rgba(0, 217, 255, 0.25);
+  }
+
+  .btn-generate {
+    width: 100%;
+    padding: 16px;
+    border-radius: 16px;
+    border: none;
+    background: linear-gradient(135deg, #00d9ff, #0070f3);
+    color: #030712;
+    font-family: var(--font-tech);
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 6px 26px rgba(0, 217, 255, 0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .btn-generate:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0, 217, 255, 0.6);
+  }
+
+  .btn-generate:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  /* Result Box */
+  .result-slot-container {
+    margin-top: 26px;
+    border: 2px dashed rgba(0, 217, 255, 0.25);
+    border-radius: 18px;
+    padding: 24px 18px;
+    text-align: center;
+    background: rgba(2, 6, 23, 0.5);
+  }
+
+  .slot-title {
+    font-size: 10px;
+    font-family: var(--font-mono);
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .rendered-token {
+    font-family: var(--font-tech);
+    font-size: 32px;
+    font-weight: 900;
+    letter-spacing: 6px;
+    color: var(--cyan);
+    text-shadow: 0 0 20px rgba(0, 217, 255, 0.6);
+  }
+
+  .placeholder-bars {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .placeholder-bars span {
+    width: 18px;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(0, 217, 255, 0.3);
+  }
+
+  .btn-copy-token {
+    width: 100%;
+    margin-top: 14px;
+    padding: 12px;
+    border-radius: 12px;
+    background: rgba(0, 217, 255, 0.08);
+    border: 1px solid var(--border-cyan);
+    color: var(--cyan);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    display: none;
+    transition: background 0.2s;
+  }
+
+  .btn-copy-token:hover {
+    background: rgba(0, 217, 255, 0.18);
+  }
+
+  /* QR Display Wrap */
+  .qr-holder-box {
+    display: none;
+    margin-top: 20px;
+    text-align: center;
+  }
+
+  .qr-frame {
+    width: 220px;
+    height: 220px;
+    margin: 0 auto;
+    border-radius: 16px;
+    border: 2px solid var(--cyan);
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 0 30px rgba(0, 217, 255, 0.35);
+  }
+
+  .qr-frame img {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .qr-scan-beam {
+    position: absolute;
+    inset: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #fff, transparent);
+    box-shadow: 0 0 16px #fff;
+    animation: beamMove 2.2s ease-in-out infinite alternate;
+  }
+
+  @keyframes beamMove {
+    0% { top: 0%; }
+    100% { top: 98%; }
+  }
+
+  @media (max-width: 860px) {
+    .terminal-layout {
+      grid-template-columns: 1fr;
+    }
+    .visual-stage {
+      display: none;
+    }
+  }
+</style>
+
+
+<!-- Core Audio Engine -->
+<audio id="coreAudio" src="song.mp3" preload="auto" loop></audio>
+
+<div class="terminal-layout">
+  <!-- Left Vector Bot Showcase -->
+  <div class="visual-stage">
+    <svg class="svg-bot-hero" viewBox="0 0 360 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="botPlate" x1="0" y1="0" x2="360" y2="360" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#ffffff"/>
+          <stop offset="70%" stop-color="#e0edfa"/>
+          <stop offset="100%" stop-color="#99badb"/>
+        </linearGradient>
+        <linearGradient id="screenGlass" x1="60" y1="90" x2="300" y2="240" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#020817"/>
+          <stop offset="100%" stop-color="#000208"/>
+        </linearGradient>
+      </defs>
+
+      <!-- Ground Contact Shadow -->
+      <ellipse cx="180" cy="330" rx="90" ry="14" fill="rgba(0,0,0,0.5)" filter="blur(10px)"/>
+
+      <!-- Lateral Ear Units -->
+      <rect x="24" y="140" width="28" height="48" rx="14" fill="#00d9ff" opacity="0.9"/>
+      <rect x="308" y="140" width="28" height="48" rx="14" fill="#00d9ff" opacity="0.9"/>
+
+      <!-- Head Shape -->
+      <rect x="42" y="60" width="276" height="210" rx="105" fill="url(#botPlate)"/>
+
+      <!-- Dark Glass Visor -->
+      <rect x="68" y="85" width="224" height="160" rx="80" fill="url(#screenGlass)" stroke="rgba(0, 217, 255, 0.4)" stroke-width="2.5"/>
+
+      <!-- Glowing Blue Ocular Elements -->
+      <rect x="110" y="130" width="26" height="70" rx="13" fill="#00d9ff"/>
+      <rect x="224" y="130" width="26" height="70" rx="13" fill="#00d9ff"/>
+      <circle cx="123" cy="144" r="6" fill="#fff"/>
+      <circle cx="237" cy="144" r="6" fill="#fff"/>
+
+      <!-- Floating Kinetic Gears -->
+      <path d="M 30 70 L 40 70 L 35 60 Z" fill="#00d9ff" opacity="0.4"/>
+      <circle cx="320" cy="90" r="14" stroke="#00d9ff" stroke-dasharray="4 4" stroke-width="2" fill="none"/>
+      <circle cx="50" cy="270" r="10" stroke="#00d9ff" stroke-dasharray="3 3" stroke-width="2" fill="none"/>
+    </svg>
+  </div>
+
+  <!-- Right Interactive Console -->
+  <div class="pairing-card">
+    <div class="terminal-nav">
+      <a href="index.html" class="return-link"><i class="fa-solid fa-arrow-left"></i> Home</a>
+      <span style="font-size:11px; font-family:var(--font-mono); color:var(--text-muted);">CLUSTER 01</span>
+    </div>
+
+    <div class="terminal-header">
+      <div class="avatar-badge"><i class="fa-solid fa-robot"></i></div>
+      <h2>MALIYA<span>-MD</span></h2>
+      <p>Secure Pairing Terminal</p>
+    </div>
+
+    <div class="mode-toggle-group">
+      <button class="toggle-btn active" id="modeBtnCode" onclick="setMode('code')">
+        <i class="fa-solid fa-terminal"></i> PAIR CODE
+      </button>
+      <button class="toggle-btn" id="modeBtnQR" onclick="setMode('qr')">
+        <i class="fa-solid fa-qrcode"></i> QR SCAN
+      </button>
+    </div>
+
+    <!-- Phone Number Mode -->
+    <div id="pairCodeStage">
+      <input type="tel" id="targetNumber" class="phone-input-field" placeholder="947XXXXXXXX" maxlength="15" autocomplete="off">
+      <button class="btn-generate" id="execPairBtn" onclick="requestPairCode()">
+        GENERATE PAIR CODE <i class="fa-solid fa-arrow-right"></i>
+      </button>
+    </div>
+
+    <!-- QR Mode -->
+    <div id="pairQRStage" style="display:none;">
+      <button class="btn-generate" id="execQRBtn" onclick="requestQR()">
+        LOAD QR CODE <i class="fa-solid fa-rotate"></i>
+      </button>
+      <div class="qr-holder-box" id="qrContainer">
+        <div class="qr-frame">
+          <div class="qr-scan-beam"></div>
+          <img id="qrElement" src="" alt="Session QR">
+        </div>
+      </div>
+    </div>
+
+    <!-- Result Box -->
+    <div class="result-slot-container">
+      <div class="slot-title">YOUR CONNECTION CODE</div>
+      <div id="resultOutput">
+        <div class="placeholder-bars">
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+    </div>
+    <button class="btn-copy-token" id="copyTokenBtn"><i class="fa-solid fa-copy"></i> Copy To Clipboard</button>
+  </div>
+</div>
+
+<script>
+  window.BACKEND_URL = "https://railway-backend-production-0b48.up.railway.app";
+  if (window.axios) {
+    axios.defaults.baseURL = window.BACKEND_URL;
+    axios.defaults.withCredentials = true;
+  }
+
+  // One Click Sound Engine
+  let isAudioRunning = false;
+  const audioObj = document.getElementById("coreAudio");
+  window.addEventListener("pointerdown", () => {
+    if (!isAudioRunning && audioObj) {
+      audioObj.volume = 0.55;
+      audioObj.play().catch(() => {});
+      isAudioRunning = true;
+    }
+  }, { once: true });
+
+  // Kinetic Cursor Glow Follow
+  const core = document.getElementById("cursorCore");
+  const aura = document.getElementById("cursorAura");
+  window.addEventListener("pointermove", (e) => {
+    core.style.left = e.clientX + "px";
+    core.style.top = e.clientY + "px";
+    aura.style.left = e.clientX + "px";
+    aura.style.top = e.clientY + "px";
+  }, { passive: true });
+
+  // Tab Swapping
+  function setMode(mode) {
+    const isCode = mode === "code";
+    document.getElementById("modeBtnCode").classList.toggle("active", isCode);
+    document.getElementById("modeBtnQR").classList.toggle("active", !isCode);
+    document.getElementById("pairCodeStage").style.display = isCode ? "block" : "none";
+    document.getElementById("pairQRStage").style.display = !isCode ? "block" : "none";
+    document.getElementById("copyTokenBtn").style.display = "none";
+    document.getElementById("resultOutput").innerHTML = `
+      <div class="placeholder-bars">
+        <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+      </div>`;
+  }
+
+  // Pair Code Generator
+  let currentToken = "";
+  async function requestPairCode() {
+    const input = document.getElementById("targetNumber");
+    const cleanNumber = input.value.replace(/[^0-9]/g, "");
+    if (!cleanNumber) return alert("Please enter your WhatsApp number.");
+
+    const btn = document.getElementById("execPairBtn");
+    const out = document.getElementById("resultOutput");
+    const copyBtn = document.getElementById("copyTokenBtn");
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> GENERATING...';
+    out.innerHTML = `<span style="color:var(--cyan); font-family:var(--font-mono); font-size:14px;">CONNECTING TO CLUSTER...</span>`;
+
+    try {
+      const res = await axios(`/pair?number=${cleanNumber}`);
+      currentToken = (res.data && res.data.code) ? res.data.code : "Unavailable";
+      out.innerHTML = `<span class="rendered-token">${currentToken}</span>`;
+      if (currentToken !== "Unavailable") {
+        copyBtn.style.display = "block";
+        copyBtn.onclick = () => {
+          navigator.clipboard.writeText(currentToken);
+          copyBtn.innerHTML = '<i class="fa-solid fa-check"></i> Copied to Clipboard!';
+          setTimeout(() => { copyBtn.innerHTML = '<i class="fa-solid fa-copy"></i> Copy To Clipboard'; }, 2200);
+        };
+      }
+    } catch {
+      out.innerHTML = `<span style="color:#f43f5e; font-family:var(--font-mono); font-size:14px;">Gateway Timeout - Try Again</span>`;
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = 'GENERATE PAIR CODE <i class="fa-solid fa-arrow-right"></i>';
+    }
+  }
+
+  // QR Code Generator
+  async function requestQR() {
+    const btn = document.getElementById("execQRBtn");
+    const box = document.getElementById("qrContainer");
+    const img = document.getElementById("qrElement");
+    const out = document.getElementById("resultOutput");
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> LOADING QR...';
+
+    try {
+      const res = await axios("/qr");
+      if (res.data && res.data.qr) {
+        img.src = res.data.qr;
+        box.style.display = "block";
+        out.innerHTML = `<span style="color:var(--cyan); font-family:var(--font-mono); font-size:13px;">Point WhatsApp Link Device Camera At Code</span>`;
+      }
+    } catch {
+      out.innerHTML = `<span style="color:#f43f5e; font-family:var(--font-mono); font-size:13px;">Failed to obtain QR stream</span>`;
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = 'LOAD QR CODE <i class="fa-solid fa-rotate"></i>';
+    }
+  }
+</script>
