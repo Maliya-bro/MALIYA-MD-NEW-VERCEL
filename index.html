@@ -3639,7 +3639,11 @@
         btn.disabled = true;
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
         try {
-          const res = await fetch(`${window.SETTINGS_API_URL}/api/settings/request-code`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phone }), });
+          const res = await fetch(`${window.SETTINGS_API_URL}/api/settings/request-code`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ phone }),
+          });
           const data = await res.json();
           if (!data.ok) { alert(data.error || "Failed to send code."); return; }
           settingsSessionId = data.sessionId;
@@ -3659,7 +3663,11 @@
         btn.disabled = true;
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verifying...';
         try {
-          const res = await fetch(`${window.SETTINGS_API_URL}/api/settings/verify-code`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sessionId: settingsSessionId, code }), });
+          const res = await fetch(`${window.SETTINGS_API_URL}/api/settings/verify-code`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sessionId: settingsSessionId, code }),
+          });
           const data = await res.json();
           if (!data.ok) { document.getElementById("settingsCodeError").textContent = data.error || "Invalid code."; return; }
           settingsToken = data.token;
@@ -3678,34 +3686,52 @@
       async function loadSettings() {
         if (!settingsToken) return;
         try {
-          const res = await fetch(`${window.SETTINGS_API_URL}/api/settings`, { headers: { "x-settings-token": settingsToken }, });
+          const res = await fetch(`${window.SETTINGS_API_URL}/api/settings`, {
+            headers: { "x-settings-token": settingsToken },
+          });
           if (res.status === 401) { handleUnauthorized(); return; }
           const contentType = res.headers.get("content-type");
           if (!contentType || !contentType.includes("application/json")) throw new Error("Server Error. API is updating...");
           const data = await res.json();
           if (!data.ok) return alert(data.error || "Failed to load settings.");
+
           const { settings, images } = data;
           if (document.getElementById("botMode")) document.getElementById("botMode").value = settings.mode || "public";
           if (document.getElementById("workScope")) document.getElementById("workScope").value = settings.work_scope || "private";
           if (document.getElementById("autoReactMode")) document.getElementById("autoReactMode").value = settings.auto_react_mode || "all";
           if (document.getElementById("alwaysPresence")) document.getElementById("alwaysPresence").value = settings.always_presence || "off";
           if (document.getElementById("botNameInput")) document.getElementById("botNameInput").value = settings.bot_name || "𝙼𝙰𝙻𝙸𝚈𝙰-𝙼𝙳 𝙼𝙸𝙽𝙸";
-          const toggles = ['btnsEnabled', 'autoMsg', 'seenAllMsg', 'antiSpam', 'antiDelete', 'autoRejectCalls', 'autoStatusSeen', 'autoStatusReact', 'autoDownloadStatus', 'autoReactMsg', 'silentAutomation'];
-          const dbKeys = ['btns_enabled', 'auto_msg', 'seen_all_msg', 'anti_spam', 'anti_delete', 'auto_reject_calls', 'auto_status_seen', 'auto_status_react', 'auto_download_status', 'auto_react_msg', 'silent_automation', 'custom_auto_reply'];
+
+          // ✅ customAutoReply ඇතුළත් කර නිවැරදි කරන ලද array එක
+          const toggles = [
+            'btnsEnabled', 'autoMsg', 'seenAllMsg', 'antiSpam', 'antiDelete',
+            'autoRejectCalls', 'autoStatusSeen', 'autoStatusReact',
+            'autoDownloadStatus', 'autoReactMsg', 'silentAutomation', 'customAutoReply'
+          ];
+          const dbKeys = [
+            'btns_enabled', 'auto_msg', 'seen_all_msg', 'anti_spam', 'anti_delete',
+            'auto_reject_calls', 'auto_status_seen', 'auto_status_react',
+            'auto_download_status', 'auto_react_msg', 'silent_automation', 'custom_auto_reply'
+          ];
+
           toggles.forEach((id, index) => {
             const el = document.getElementById(id);
             if (el) el.checked = !!settings[dbKeys[index]];
           });
-          if (settings.custom_reply_rules) customReplyRules = settings.custom_reply_rules;
+
+          customReplyRules = Array.isArray(settings.custom_reply_rules) ? settings.custom_reply_rules : [];
           toggleCustomReplyUI();
           renderCustomReplies();
+
           const imageMap = {};
           if (images && images.length) images.forEach(img => { imageMap[img.key] = img; });
+
           const previewMap = {
             alive: { img: "alivePreview", input: "aliveUrl" },
             menu_header: { img: "menuPreview", input: "menu_headerUrl" },
             settings_header: { img: "settingsPreview", input: "settings_headerUrl" }
           };
+
           for (const [key, map] of Object.entries(previewMap)) {
             const img = document.getElementById(map.img);
             const input = document.getElementById(map.input);
@@ -3717,6 +3743,7 @@
               if (img) img.style.display = "none";
             }
           }
+
           const searchImgUrl = imageMap["cinesubz_header"]?.data || imageMap["anime_header"]?.data || imageMap["cartoon_header"]?.data || "";
           const searchImg = document.getElementById("searchPreview");
           const searchInput = document.getElementById("search_imageUrl");
@@ -3745,7 +3772,11 @@
         const btn = input.parentElement.querySelector(".image-upload-btn");
         btn.disabled = true; btn.textContent = "Saving...";
         try {
-          const res = await fetch(`${window.SETTINGS_API_URL}/api/settings`, { method: "POST", headers: { "Content-Type": "application/json", "x-settings-token": settingsToken }, body: JSON.stringify({ images: { [key]: dataUrl } }), });
+          const res = await fetch(`${window.SETTINGS_API_URL}/api/settings`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "x-settings-token": settingsToken },
+            body: JSON.stringify({ images: { [key]: dataUrl } }),
+          });
           if (res.status === 401) { handleUnauthorized(); return; }
           const data = await res.json();
           if (!data.ok) return alert(data.error || "Save failed.");
@@ -3765,14 +3796,16 @@
         btn.disabled = true; btn.textContent = "Saving All...";
         const keysToUpdate = ["anime_header", "tiktok_header", "cinesubz_header", "cartoon_header", "education_header", "song"];
         try {
-          let hasError = false;
-          for (const key of keysToUpdate) {
-            const res = await fetch(`${window.SETTINGS_API_URL}/api/settings`, { method: "POST", headers: { "Content-Type": "application/json", "x-settings-token": settingsToken }, body: JSON.stringify({ images: { [key]: dataUrl } }), });
-            if (res.status === 401) { handleUnauthorized(); return; }
-            const data = await res.json();
-            if (!data.ok) hasError = true;
-          }
-          if (hasError) return alert("Some images failed to save.");
+          const imagesPayload = {};
+          for (const key of keysToUpdate) imagesPayload[key] = dataUrl;
+          const res = await fetch(`${window.SETTINGS_API_URL}/api/settings`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "x-settings-token": settingsToken },
+            body: JSON.stringify({ images: imagesPayload }),
+          });
+          if (res.status === 401) { handleUnauthorized(); return; }
+          const data = await res.json();
+          if (!data.ok) return alert(data.error || "Save failed.");
           const st = document.getElementById("settingsSaveStatus");
           st.textContent = "✅ Universal Search Image saved!";
           st.style.color = "var(--accent3)";
@@ -3784,7 +3817,10 @@
         if (!settingsToken) return alert("Please verify your phone first.");
         if (!confirm(`Delete this ${key} URL?`)) return;
         try {
-          const res = await fetch(`${window.SETTINGS_API_URL}/api/settings/image/${key}`, { method: "DELETE", headers: { "x-settings-token": settingsToken }, });
+          const res = await fetch(`${window.SETTINGS_API_URL}/api/settings/image/${key}`, {
+            method: "DELETE",
+            headers: { "x-settings-token": settingsToken },
+          });
           if (res.status === 401) { handleUnauthorized(); return; }
           const data = await res.json();
           if (!data.ok) return alert("Failed to delete URL.");
@@ -3812,7 +3848,10 @@
         const keysToDelete = ["anime_header", "tiktok_header", "cinesubz_header", "cartoon_header", "education_header", "song"];
         try {
           for (const key of keysToDelete) {
-            const res = await fetch(`${window.SETTINGS_API_URL}/api/settings/image/${key}`, { method: "DELETE", headers: { "x-settings-token": settingsToken }, });
+            const res = await fetch(`${window.SETTINGS_API_URL}/api/settings/image/${key}`, {
+              method: "DELETE",
+              headers: { "x-settings-token": settingsToken },
+            });
             if (res.status === 401) { handleUnauthorized(); return; }
           }
           const img = document.getElementById("searchPreview");
@@ -3853,7 +3892,11 @@
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
         statusEl.textContent = "";
         try {
-          const res = await fetch(`${window.SETTINGS_API_URL}/api/settings`, { method: "POST", headers: { "Content-Type": "application/json", "x-settings-token": settingsToken, }, body: JSON.stringify({ settings }), });
+          const res = await fetch(`${window.SETTINGS_API_URL}/api/settings`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "x-settings-token": settingsToken },
+            body: JSON.stringify({ settings }),
+          });
           if (res.status === 401) { handleUnauthorized(); return; }
           const contentType = res.headers.get("content-type");
           if (!contentType || !contentType.includes("application/json")) throw new Error("Server error. Please wait a minute and try again.");
