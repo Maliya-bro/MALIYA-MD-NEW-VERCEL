@@ -1016,7 +1016,6 @@ function showSuccessOverlay(title, sub, opts = {}) {
   titleEl.textContent = title;
   subEl.textContent = sub;
 
-  // Reset animations so they replay each time
   const path = check.querySelector("path");
   if (path) {
     path.style.animation = "none";
@@ -1129,8 +1128,7 @@ async function verifySettingsCode() {
       );
       document.getElementById("settingsAuth").classList.add("hidden");
       document.getElementById("settingsPanel").classList.remove("hidden");
-      document.getElementById("settingsStatus").textContent = "✅ Authenticated · Live Bot Settings Active";
-      showToast("Verified!", "Your bot configuration has been loaded.");
+      showToast("Verified!", "Your live bot configuration has been loaded.");
     }
   } catch {
     showToast("Network Error", "Verification failed.", true);
@@ -1151,7 +1149,12 @@ async function loadSettings() {
     const data = await res.json();
     if (!data.ok) return;
 
-    const { settings, images } = data;
+    const { settings, images, botInfo } = data;
+    if (botInfo) {
+      document.getElementById("settingsStatus").textContent =
+        `✅ ${botInfo.pushName} (+${botInfo.phone}) · ${botInfo.online ? "Bot Online 🟢" : "Bot Offline 🔴"}`;
+    }
+
     document.getElementById("botMode").value = settings.mode || "public";
     document.getElementById("workScope").value = settings.work_scope || "private";
     document.getElementById("autoReactMode").value = settings.auto_react_mode || "all";
@@ -1237,6 +1240,7 @@ async function deleteImage(key) {
   });
   if (res.status === 401) return handleUnauthorized();
   document.getElementById(key + "Url").value = "";
+  document.getElementById(key === "menu_header" ? "menuPreview" : key === "settings_header" ? "settingsPreview" : "alivePreview").classList.add("hidden");
   showToast("Removed", "Banner URL cleared.");
 }
 
@@ -1362,7 +1366,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (settingsToken) {
       document.getElementById("settingsAuth").classList.add("hidden");
       document.getElementById("settingsPanel").classList.remove("hidden");
-      document.getElementById("settingsStatus").textContent = "✅ Authenticated · Live Bot Settings Active";
     }
   }
 });
