@@ -275,7 +275,8 @@ const API_BASE = (location.hostname === "localhost" || location.hostname === "12
   : "https://railway-backend-production-0b48.up.railway.app";
 
 function getAuthHeaders(extra = {}) {
-  const tok = localStorage.getItem("maliya_poll_jwt") || "";
+  const m = document.cookie.match(/(?:^|;\s*)maliya_poll_jwt=([^;]+)/);
+  const tok = localStorage.getItem("maliya_poll_jwt") || (m ? decodeURIComponent(m[1]) : "");
   return tok ? { ...extra, Authorization: `Bearer ${tok}` } : extra;
 }
 
