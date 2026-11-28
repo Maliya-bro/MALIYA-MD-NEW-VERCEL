@@ -181,7 +181,7 @@ button{font-family:inherit}
       </button>
     </div>
 
-    <a href="pair.html?tab=poll" class="nav-link-btn">← Poll Booster</a>
+    <a href="react.html?tab=poll" class="nav-link-btn">← Poll Booster</a>
     <a href="index.html" class="nav-link-btn">Home</a>
   </div>
 </header>
@@ -202,6 +202,11 @@ const API_BASE = (location.hostname === "localhost" || location.hostname === "12
   ? ""
   : "https://railway-backend-production-0b48.up.railway.app";
 
+function getAuthHeaders(extra = {}) {
+  const tok = localStorage.getItem("maliya_poll_jwt") || "";
+  return tok ? { ...extra, Authorization: `Bearer ${tok}` } : extra;
+}
+
 /* THEME SWITCHER */
 (function(){
   function upd(t){document.querySelectorAll('[data-theme-btn]').forEach(b=>b.classList.toggle('active',b.dataset.themeBtn===t))}
@@ -219,10 +224,13 @@ const API_BASE = (location.hostname === "localhost" || location.hostname === "12
 /* LOAD USER PROFILE */
 async function loadProfile() {
   try {
-    const res = await fetch(`${API_BASE}/api/poll/me`, { credentials: "include" });
+    const res = await fetch(`${API_BASE}/api/poll/me`, {
+      credentials: "include",
+      headers: getAuthHeaders()
+    });
     const data = await res.json();
     if (!res.ok || !data.ok) {
-      window.location.href = "pair.html?tab=poll";
+      window.location.href = "react.html?tab=poll";
       return;
     }
 
@@ -262,7 +270,7 @@ async function loadProfile() {
       </div>
     `).join("");
   } catch {
-    window.location.href = "pair.html?tab=poll";
+    window.location.href = "react.html?tab=poll";
   }
 }
 
