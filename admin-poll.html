@@ -194,7 +194,7 @@ th{color:var(--t-txt-3);font-size:11px;font-weight:800;text-transform:uppercase;
       </button>
     </div>
 
-    <a href="pair.html?tab=poll" class="nav-link-btn">← Poll Booster</a>
+    <a href="react.html?tab=poll" class="nav-link-btn">← Poll Booster</a>
     <a href="index.html" class="nav-link-btn">Home</a>
   </div>
 </header>
@@ -274,6 +274,11 @@ const API_BASE = (location.hostname === "localhost" || location.hostname === "12
   ? ""
   : "https://railway-backend-production-0b48.up.railway.app";
 
+function getAuthHeaders(extra = {}) {
+  const tok = localStorage.getItem("maliya_poll_jwt") || "";
+  return tok ? { ...extra, Authorization: `Bearer ${tok}` } : extra;
+}
+
 /* THEME SWITCHER */
 (function(){
   function upd(t){document.querySelectorAll('[data-theme-btn]').forEach(b=>b.classList.toggle('active',b.dataset.themeBtn===t))}
@@ -298,7 +303,7 @@ async function unlockAdmin() {
   try {
     const res = await fetch(`${API_BASE}/api/poll/admin/overview`, {
       credentials: "include",
-      headers: { "x-admin-pin": savedPin }
+      headers: getAuthHeaders({ "x-admin-pin": savedPin })
     });
     const data = await res.json();
 
@@ -356,7 +361,7 @@ async function updateCoins() {
   const res = await fetch(`${API_BASE}/api/poll/admin/coins`, {
     method: "POST",
     credentials: "include",
-    headers: { "Content-Type": "application/json", "x-admin-pin": savedPin },
+    headers: getAuthHeaders({ "Content-Type": "application/json", "x-admin-pin": savedPin }),
     body: JSON.stringify({ email, amount, mode })
   });
   const data = await res.json();
@@ -374,7 +379,7 @@ async function toggleBan(email, isBanned) {
   await fetch(`${API_BASE}/api/poll/admin/ban-user`, {
     method: "POST",
     credentials: "include",
-    headers: { "Content-Type": "application/json", "x-admin-pin": savedPin },
+    headers: getAuthHeaders({ "Content-Type": "application/json", "x-admin-pin": savedPin }),
     body: JSON.stringify({ email, isBanned })
   });
   unlockAdmin();
@@ -391,7 +396,7 @@ async function addPartner() {
   const res = await fetch(`${API_BASE}/api/poll/admin/add-partner`, {
     method: "POST",
     credentials: "include",
-    headers: { "Content-Type": "application/json", "x-admin-pin": savedPin },
+    headers: getAuthHeaders({ "Content-Type": "application/json", "x-admin-pin": savedPin }),
     body: JSON.stringify({ partnerId, name, url, secret, sessionCount })
   });
   const data = await res.json();
