@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Secret Poll Admin — MALIYA-MD</title>
+<link rel="icon" type="image/png" href="https://maliya-md.vercel.app/logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#090d16;color:#f1f5f9;padding:24px}
+.wrap{max-width:1050px;margin:0 auto}
+.card{background:#111827;border:1px solid #1f2937;border-radius:18px;padding:20px;margin-bottom:20px}
+h1,h2{font-weight:800;margin-bottom:12px}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+input,select{background:#1f2937;border:1px solid #374151;color:#fff;padding:10px 12px;border-radius:10px;font-size:13px}
+button{background:#6366f1;color:#fff;border:none;padding:10px 16px;border-radius:10px;font-weight:700;cursor:pointer}
+button:hover{opacity:.92}
+button.danger{background:#ef4444}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
+th,td{padding:10px;border-bottom:1px solid #1f2937;text-align:left}
+th{color:#9ca3af;font-size:11px;text-transform:uppercase}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <h1>🛡️ MALIYA-MD Secret Poll Admin</h1>
+    <a href="pair.html?tab=poll" style="color:#818cf8;font-size:13px;font-weight:700;text-decoration:none">← Back to Poll Booster</a>
+  </div>
+
+  <div id="pinGate" class="card">
+    <h2>Admin Security Verification</h2>
+    <p style="font-size:13px;color:#9ca3af;margin-bottom:12px">Must be logged into your authorized Admin Google Account + enter Admin Secret PIN.</p>
+    <div class="row">
+      <input type="password" id="adminPin" placeholder="Enter Admin Secret PIN" onkeydown="if(event.key==='Enter')unlockAdmin()">
+      <button onclick="unlockAdmin()">Unlock Dashboard</button>
+    </div>
+    <div id="pinErr" style="color:#f87171;font-size:13px"></div>
+  </div>
+
+  <div id="adminPanel" class="hidden">
+    <!-- ADD / SET COINS -->
+    <div class="card">
+      <h2>🪙 Manage User Coins</h2>
+      <div class="row">
+        <input type="email" id="targetEmail" placeholder="User Google Email" style="min-width:260px">
+        <input type="number" id="coinAmount" placeholder="Coins (e.g. 100)">
+        <select id="coinMode">
+          <option value="add">Add Coins (+)</option>
+          <option value="set">Set Exact Balance (=)</option>
+        </select>
+        <button onclick="updateCoins()">Update Coins</button>
+      </div>
+      <div id="coinMsg" style="font-size:12.5px;color:#34d399"></div>
+    </div>
+
+    <!-- COMBINE PARTNER BOT OWNER -->
+    <div class="card">
+      <h2>🤝 Combine External Bot Owner Node</h2>
+      <div class="row">
+        <input type="text" id="pId" placeholder="Partner ID (e.g. bot2)">
+        <input type="text" id="pName" placeholder="Bot Name">
+        <input type="url" id="pUrl" placeholder="https://partner-bot.herokuapp.com/api/internal/poll-vote" style="min-width:280px">
+        <input type="text" id="pSecret" placeholder="Partner HMAC Secret">
+        <input type="number" id="pCount" placeholder="Sessions (e.g. 50)">
+        <button onclick="addPartner()">Link Partner Bot</button>
+      </div>
+      <div id="partnerMsg" style="font-size:12.5px;color:#34d399"></div>
+    </div>
+
+    <!-- LIVE POLL VOTE JOBS -->
+    <div class="card">
+      <h2>📊 Live &amp; Recent Poll Vote Orders</h2>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>User</th><th>Channel</th><th>Selected Option</th><th>Votes / Coins</th><th>Status</th></tr></thead>
+          <tbody id="jobsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- REGISTERED USERS -->
+    <div class="card">
+      <h2>👥 Registered Google Users (<span id="userCount">0</span>)</h2>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>Name</th><th>Email</th><th>Coins</th><th>Votes Used</th><th>Signup IP</th><th>Action</th></tr></thead>
+          <tbody id="usersBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_BASE = (location.hostname === "localhost" || location.hostname === "127.0.0.1")
+  ? ""
+  : "https://railway-backend-production-0b48.up.railway.app";
+
+let savedPin = "";
+
+async function unlockAdmin() {
+  savedPin = document.getElementById("adminPin").value.trim();
+  const errEl = document.getElementById("pinErr");
+  errEl.textContent = "Verifying...";
+
+  try {
+    const res = await fetch(`${API_BASE}/api/poll/admin/overview`, {
+      credentials: "include",
+      headers: { "x-admin-pin": savedPin }
+    });
+    const data = await res.json();
+
+    if (!res.ok || !data.ok) {
+      errEl.textContent = data.error || "Access denied. Make sure you logged in via Google first.";
+      return;
+    }
+
+    document.getElementById("pinGate").classList.add("hidden");
+    document.getElementById("adminPanel").classList.remove("hidden");
+    renderDashboard(data);
+  } catch {
+    errEl.textContent = "Network error.";
+  }
+}
+
+function renderDashboard(data) {
+  document.getElementById("userCount").textContent = data.users.length;
+  document.getElementById("usersBody").innerHTML = data.users.map(u => `
+    <tr>
+      <td>${u.name}</td>
+      <td>${u.email}</td>
+      <td style="color:#fbbf24;font-weight:800">${u.coins}</td>
+      <td>${u.totalVotesOrdered || 0}</td>
+      <td style="font-size:11px;color:#9ca3af">${u.signupIp || "-"}</td>
+      <td style="display:flex;gap:6px">
+        <button onclick="quickFill('${u.email}')">+ Coins</button>
+        <button class="danger" onclick="toggleBan('${u.email}', ${!u.isBanned})">${u.isBanned ? 'Unban' : 'Ban'}</button>
+      </td>
+    </tr>
+  `).join("");
+
+  document.getElementById("jobsBody").innerHTML = (data.orders || []).map(o => `
+    <tr>
+      <td>${o.email}</td>
+      <td>${o.channelName}</td>
+      <td>${o.optionName}</td>
+      <td>${o.votesCount} Votes (-${o.coinsSpent} coins)</td>
+      <td>${o.status}</td>
+    </tr>
+  `).join("");
+}
+
+function quickFill(email) {
+  document.getElementById("targetEmail").value = email;
+  document.getElementById("coinAmount").focus();
+}
+
+async function updateCoins() {
+  const email = document.getElementById("targetEmail").value.trim();
+  const amount = Number(document.getElementById("coinAmount").value);
+  const mode = document.getElementById("coinMode").value;
+  const msg = document.getElementById("coinMsg");
+
+  const res = await fetch(`${API_BASE}/api/poll/admin/coins`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json", "x-admin-pin": savedPin },
+    body: JSON.stringify({ email, amount, mode })
+  });
+  const data = await res.json();
+  if (data.ok) {
+    msg.style.color = "#34d399";
+    msg.textContent = `✅ Updated ${data.email} -> New Balance: ${data.newBalance} Coins`;
+    unlockAdmin();
+  } else {
+    msg.style.color = "#f87171";
+    msg.textContent = `❌ ${data.error}`;
+  }
+}
+
+async function toggleBan(email, isBanned) {
+  await fetch(`${API_BASE}/api/poll/admin/ban-user`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json", "x-admin-pin": savedPin },
+    body: JSON.stringify({ email, isBanned })
+  });
+  unlockAdmin();
+}
+
+async function addPartner() {
+  const partnerId = document.getElementById("pId").value.trim();
+  const name = document.getElementById("pName").value.trim();
+  const url = document.getElementById("pUrl").value.trim();
+  const secret = document.getElementById("pSecret").value.trim();
+  const sessionCount = Number(document.getElementById("pCount").value || 0);
+  const msg = document.getElementById("partnerMsg");
+
+  const res = await fetch(`${API_BASE}/api/poll/admin/add-partner`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json", "x-admin-pin": savedPin },
+    body: JSON.stringify({ partnerId, name, url, secret, sessionCount })
+  });
+  const data = await res.json();
+  if (data.ok) {
+    msg.style.color = "#34d399";
+    msg.textContent = `✅ Partner bot linked successfully!`;
+  } else {
+    msg.style.color = "#f87171";
+    msg.textContent = `❌ ${data.error || "Failed to link partner"}`;
+  }
+}
+</script>
+</body>
+</html>
