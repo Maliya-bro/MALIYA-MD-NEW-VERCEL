@@ -827,11 +827,27 @@ const API_BASE = (location.hostname === "localhost" || location.hostname === "12
   ? ""
   : "https://railway-backend-production-0b48.up.railway.app";
 
+// Cross-domain Vercel <-> Railway auth token capture
+(function() {
+  const u = new URL(window.location.href);
+  const tok = u.searchParams.get("auth_token");
+  if (tok) {
+    localStorage.setItem("maliya_poll_jwt", tok);
+    u.searchParams.delete("auth_token");
+    window.history.replaceState({}, "", u.toString());
+  }
+})();
+
+function getAuthHeaders(extra = {}) {
+  const tok = localStorage.getItem("maliya_poll_jwt") || "";
+  return tok ? { ...extra, Authorization: `Bearer ${tok}` } : extra;
+}
+
 const SEND_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>';
 const CAL_ICON  = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M9 16l2 2 4-4"/></svg>';
 const SPIN_ICON = '<svg class="spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>';
 
-// Max 5 Emojis + Rich Multi-Category Library (Love, Funny, Sad, Hype, Support)
+// Max 5 Emojis + Multi-Category Library (Love, Funny, Sad, Hype)
 const MAX_EMOJIS = 5;
 const EMOJI_CATEGORIES = {
   all: [
@@ -884,7 +900,6 @@ function renderEmojiPicker(mode, catBarId, gridId, trayId, badgeId, chosenArr, c
   const tray = document.getElementById(trayId);
   const badge = document.getElementById(badgeId);
 
-  // Category Pills
   catBar.innerHTML = "";
   Object.keys(CAT_LABELS).forEach(catKey => {
     const cBtn = document.createElement("button");
@@ -895,7 +910,6 @@ function renderEmojiPicker(mode, catBarId, gridId, trayId, badgeId, chosenArr, c
     catBar.appendChild(cBtn);
   });
 
-  // Selected Tray
   tray.innerHTML = "";
   const chipWrap = document.createElement("div");
   chipWrap.className = "tray-emojis";
@@ -922,7 +936,6 @@ function renderEmojiPicker(mode, catBarId, gridId, trayId, badgeId, chosenArr, c
   tray.appendChild(chipWrap);
   badge.textContent = `${chosenArr.length} / ${MAX_EMOJIS}`;
 
-  // Category Emoji Grid
   const list = EMOJI_CATEGORIES[currentCat] || EMOJI_CATEGORIES.all;
   grid.innerHTML = "";
   list.forEach(emoji => {
@@ -964,7 +977,6 @@ function showBox(el, text, isErr) {
   el.className = "msg-box " + (isErr ? "err" : "ok");
 }
 
-/* FLOATING EMOJI BURST EFFECT */
 function launchEmojiBurst(emojis) {
   const list = emojis.length ? emojis : ["👍", "❤️", "🔥"];
   const cx = window.innerWidth / 2;
@@ -984,7 +996,6 @@ function launchEmojiBurst(emojis) {
   }
 }
 
-/* SINGLE POST SUBMIT */
 document.getElementById("singleForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const url = document.getElementById("singleUrl").value.trim();
@@ -1019,7 +1030,6 @@ document.getElementById("singleForm").addEventListener("submit", async (e) => {
   }
 });
 
-/* WEEKLY AUTO PACK SUBMIT */
 document.getElementById("weeklyForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const url = document.getElementById("weeklyUrl").value.trim();
@@ -1070,7 +1080,6 @@ document.getElementById("weeklyForm").addEventListener("submit", async (e) => {
   }
 });
 
-/* CHECK WEEKLY SUBSCRIPTION STATUS */
 async function checkWeeklyStatus() {
   const raw = document.getElementById("checkCodeInput").value.trim();
   const out = document.getElementById("checkStatusResult");
@@ -1108,11 +1117,15 @@ function loginWithGoogleForPoll() {
 
 async function initPollUserSession() {
   try {
-    const res = await fetch(`${API_BASE}/api/poll/me`, { credentials: "include" });
+    const res = await fetch(`${API_BASE}/api/poll/me`, {
+      credentials: "include",
+      headers: getAuthHeaders()
+    });
     const data = await res.json();
     document.getElementById("pollAuthLoading").classList.add("hidden");
 
     if (!res.ok || !data.ok) {
+      localStorage.removeItem("maliya_poll_jwt");
       document.getElementById("pollLoginGate").classList.remove("hidden");
       return;
     }
@@ -1153,7 +1166,7 @@ async function loadPollPreview() {
     const res = await fetch(`${API_BASE}/api/poll/preview`, {
       method: "POST",
       credentials: "include",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify({ pollUrl })
     });
     const data = await res.json();
@@ -1215,7 +1228,7 @@ async function castPollVotes() {
     const res = await fetch(`${API_BASE}/api/poll/vote`, {
       method: "POST",
       credentials: "include",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify({
         pollUrl,
         optionIndex: selectedOptIndex,
@@ -1250,7 +1263,10 @@ function trackPollJob(jobId) {
   if (pollJobTimer) clearInterval(pollJobTimer);
   pollJobTimer = setInterval(async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/poll/status/${encodeURIComponent(jobId)}`, { credentials: "include" });
+      const res = await fetch(`${API_BASE}/api/poll/status/${encodeURIComponent(jobId)}`, {
+        credentials: "include",
+        headers: getAuthHeaders()
+      });
       const data = await res.json();
       if (!data.ok || !data.job) return;
       const j = data.job;
