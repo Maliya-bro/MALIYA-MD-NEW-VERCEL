@@ -827,460 +827,45 @@ const API_BASE = (location.hostname === "localhost" || location.hostname === "12
   ? ""
   : "https://railway-backend-production-0b48.up.railway.app";
 
-// Cross-domain Vercel <-> Railway auth token capture
+// 5-Day Persistent Login (Cookie + LocalStorage)
+function setAuthToken5Days(tok) {
+  localStorage.setItem("maliya_poll_jwt", tok);
+  document.cookie = `maliya_poll_jwt=${encodeURIComponent(tok)}; path=/; max-age=${5 * 24 * 60 * 60}; SameSite=Lax`;
+}
+
+function getSavedAuthToken() {
+  const ls = localStorage.getItem("maliya_poll_jwt");
+  if (ls) return ls;
+  const m = document.cookie.match(/(?:^|;\s*)maliya_poll_jwt=([^;]+)/);
+  return m ? decodeURIComponent(m[1]) : "";
+}
+
+function clearSavedAuthToken() {
+  localStorage.removeItem("maliya_poll_jwt");
+  document.cookie = "maliya_poll_jwt=; path=/; max-age=0";
+}
+
 (function() {
   const u = new URL(window.location.href);
   const tok = u.searchParams.get("auth_token");
   if (tok) {
-    localStorage.setItem("maliya_poll_jwt", tok);
+    setAuthToken5Days(tok);
     u.searchParams.delete("auth_token");
     window.history.replaceState({}, "", u.toString());
   }
 })();
 
 function getAuthHeaders(extra = {}) {
-  const tok = localStorage.getItem("maliya_poll_jwt") || "";
+  const tok = getSavedAuthToken();
   return tok ? { ...extra, Authorization: `Bearer ${tok}` } : extra;
 }
-
-const SEND_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>';
-const CAL_ICON  = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M9 16l2 2 4-4"/></svg>';
-const SPIN_ICON = '<svg class="spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>';
-
-// Max 5 Emojis + Multi-Category Library (Love, Funny, Sad, Hype)
-const MAX_EMOJIS = 5;
-const EMOJI_CATEGORIES = {
-  all: [
-    "👍","❤️","😂","😢","🔥","😮","🙏","🎉","😍","👏",
-    "🤣","😭","💖","🥰","😘","💔","🥺","😔","😞","😥",
-    "😆","😹","😜","🤪","😎","💯","🤩","🥳","🚀","👑",
-    "💥","✨","🙌","💪","🤝","😱","🤯","😤","😡","💀"
-  ],
-  love: ["❤️","💖","🥰","😍","😘","💕","💞","💓","💗","💘","💝","🫶","🌹","💋","🤗"],
-  funny: ["😂","🤣","😹","😆","😜","🤪","😝","🤭","🙃","🤡","💀","😅","😁","😄","🥳"],
-  sad: ["😢","😭","💔","🥺","😔","😞","😥","😓","😟","😿","🥀","😩","😫","😣","🙁"],
-  hype: ["🔥","🚀","💯","👑","⚡","💥","✨","🎉","🤩","😎","🏆","🙌","👏","💪","🌟"]
-};
-
-const CAT_LABELS = {
-  all: "All",
-  love: "❤️ Love",
-  funny: "😂 Funny",
-  sad: "😢 Sad",
-  hype: "🔥 Hype"
-};
-
-let singleCat = "all";
-let weeklyCat = "all";
-let singleChosen = ["👍"];
-let weeklyChosen = ["❤️", "🔥", "🚀"];
-
-function syncCount(mode, val) {
-  document.getElementById(mode + "Count").value = val;
-  document.getElementById(mode + "Range").value = val;
-}
-
-function randomSelect(mode) {
-  const pool = EMOJI_CATEGORIES[mode === "single" ? singleCat : weeklyCat] || EMOJI_CATEGORIES.all;
-  const shuffled = [...pool].sort(() => Math.random() - 0.5).slice(0, MAX_EMOJIS);
-  if (mode === "single") singleChosen = shuffled;
-  else weeklyChosen = shuffled;
-  refreshPickers();
-}
-
-function clearEmojis(mode) {
-  if (mode === "single") singleChosen = [];
-  else weeklyChosen = [];
-  refreshPickers();
-}
-
-function renderEmojiPicker(mode, catBarId, gridId, trayId, badgeId, chosenArr, currentCat, onCatChange) {
-  const catBar = document.getElementById(catBarId);
-  const grid = document.getElementById(gridId);
-  const tray = document.getElementById(trayId);
-  const badge = document.getElementById(badgeId);
-
-  catBar.innerHTML = "";
-  Object.keys(CAT_LABELS).forEach(catKey => {
-    const cBtn = document.createElement("button");
-    cBtn.type = "button";
-    cBtn.className = "preset-pill" + (currentCat === catKey ? " active-cat" : "");
-    cBtn.textContent = CAT_LABELS[catKey];
-    cBtn.onclick = () => onCatChange(catKey);
-    catBar.appendChild(cBtn);
-  });
-
-  tray.innerHTML = "";
-  const chipWrap = document.createElement("div");
-  chipWrap.className = "tray-emojis";
-
-  if (chosenArr.length === 0) {
-    const empty = document.createElement("span");
-    empty.style.cssText = "font-size:11.5px;color:var(--t-txt-4);font-weight:600";
-    empty.textContent = "Tap up to 5 emojis below";
-    chipWrap.appendChild(empty);
-  } else {
-    chosenArr.forEach(emoji => {
-      const chip = document.createElement("span");
-      chip.className = "tray-chip";
-      chip.title = "Click to remove";
-      chip.textContent = emoji;
-      chip.onclick = () => {
-        const i = chosenArr.indexOf(emoji);
-        if (i > -1) chosenArr.splice(i, 1);
-        refreshPickers();
-      };
-      chipWrap.appendChild(chip);
-    });
-  }
-  tray.appendChild(chipWrap);
-  badge.textContent = `${chosenArr.length} / ${MAX_EMOJIS}`;
-
-  const list = EMOJI_CATEGORIES[currentCat] || EMOJI_CATEGORIES.all;
-  grid.innerHTML = "";
-  list.forEach(emoji => {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "emoji-btn" + (chosenArr.includes(emoji) ? " on" : "");
-    btn.textContent = emoji;
-    btn.onclick = () => {
-      const idx = chosenArr.indexOf(emoji);
-      if (idx > -1) {
-        chosenArr.splice(idx, 1);
-      } else if (chosenArr.length < MAX_EMOJIS) {
-        chosenArr.push(emoji);
-      } else {
-        badge.style.transform = "scale(1.18)";
-        setTimeout(() => badge.style.transform = "", 200);
-        return;
-      }
-      refreshPickers();
-    };
-    grid.appendChild(btn);
-  });
-}
-
-function refreshPickers() {
-  renderEmojiPicker("single", "singleCatBar", "singleEmojiGrid", "singleTray", "singleSelBadge", singleChosen, singleCat, (c) => {
-    singleCat = c;
-    refreshPickers();
-  });
-  renderEmojiPicker("weekly", "weeklyCatBar", "weeklyEmojiGrid", "weeklyTray", "weeklySelBadge", weeklyChosen, weeklyCat, (c) => {
-    weeklyCat = c;
-    refreshPickers();
-  });
-}
-refreshPickers();
-
-function showBox(el, text, isErr) {
-  el.textContent = text;
-  el.className = "msg-box " + (isErr ? "err" : "ok");
-}
-
-function launchEmojiBurst(emojis) {
-  const list = emojis.length ? emojis : ["👍", "❤️", "🔥"];
-  const cx = window.innerWidth / 2;
-  const cy = window.innerHeight * 0.62;
-  for (let i = 0; i < 18; i++) {
-    const el = document.createElement("div");
-    el.className = "burst-emoji";
-    el.textContent = list[i % list.length];
-    const angle = (Math.PI * 2 * i) / 18 + (Math.random() - 0.5) * 0.4;
-    const dist = 120 + Math.random() * 190;
-    const bx = Math.cos(angle) * dist + "px";
-    const by = (Math.sin(angle) * dist - 120) + "px";
-    const br = ((Math.random() - 0.5) * 90) + "deg";
-    el.style.cssText = `left:${cx}px;top:${cy}px;--bx:${bx};--by:${by};--br:${br}`;
-    document.body.appendChild(el);
-    setTimeout(() => el.remove(), 1650);
-  }
-}
-
-document.getElementById("singleForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const url = document.getElementById("singleUrl").value.trim();
-  const count = Number(document.getElementById("singleCount").value);
-  const btn = document.getElementById("singleBtn");
-  const box = document.getElementById("singleMsg");
-
-  if (!singleChosen.length) return showBox(box, "Select at least 1 emoji.", true);
-
-  btn.disabled = true;
-  btn.innerHTML = `${SPIN_ICON}<span>Dispatching Reacts...</span>`;
-  box.className = "msg-box hidden";
-
-  try {
-    const res = await fetch(`${API_BASE}/api/react/single`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url, count, emojis: singleChosen })
-    });
-    const data = await res.json();
-    if (res.ok && data.ok) {
-      showBox(box, `✅ ${data.message} (Post #${data.postId})`, false);
-      launchEmojiBurst(singleChosen);
-    } else {
-      showBox(box, `❌ ${data.error || "Request failed."}`, true);
-    }
-  } catch {
-    showBox(box, "❌ Network error. Could not reach backend server.", true);
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = `${SEND_ICON}<span>Send Instant Reacts</span>`;
-  }
-});
-
-document.getElementById("weeklyForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const url = document.getElementById("weeklyUrl").value.trim();
-  const count = Number(document.getElementById("weeklyCount").value);
-  const btn = document.getElementById("weeklyBtn");
-  const box = document.getElementById("weeklyMsg");
-
-  if (!weeklyChosen.length) return showBox(box, "Select at least 1 emoji.", true);
-
-  btn.disabled = true;
-  btn.innerHTML = `${SPIN_ICON}<span>Resolving Channel JID...</span>`;
-  box.className = "msg-box hidden";
-
-  try {
-    const res = await fetch(`${API_BASE}/api/react/weekly`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url, count, emojis: weeklyChosen })
-    });
-    const data = await res.json();
-    if (res.ok && data.ok && data.subscription) {
-      const s = data.subscription;
-      box.className = "msg-box ok";
-      box.style.textAlign = "left";
-      box.textContent = "";
-
-      const lines = [
-        `✅ ${data.message}`,
-        `📢 Channel: ${s.channelName}`,
-        `🆔 JID: ${s.jid}`,
-        `⏳ Expires: ${new Date(s.expiresAt).toLocaleString()}`
-      ];
-      lines.forEach((txt, i) => {
-        const div = document.createElement("div");
-        if (i === 0) div.style.fontWeight = "800";
-        div.textContent = txt;
-        box.appendChild(div);
-      });
-      launchEmojiBurst(weeklyChosen);
-    } else {
-      showBox(box, `❌ ${data.error || "Activation failed."}`, true);
-    }
-  } catch {
-    showBox(box, "❌ Network error. Could not reach backend server.", true);
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = `${CAL_ICON}<span>Activate 1-Week Auto Pack</span>`;
-  }
-});
-
-async function checkWeeklyStatus() {
-  const raw = document.getElementById("checkCodeInput").value.trim();
-  const out = document.getElementById("checkStatusResult");
-  const codeMatch = raw.match(/channel\/([A-Za-z0-9_-]{10,45})/);
-  const inviteCode = codeMatch ? codeMatch[1] : raw;
-  if (!inviteCode) return;
-
-  out.textContent = "Checking...";
-  try {
-    const res = await fetch(`${API_BASE}/api/react/weekly/${encodeURIComponent(inviteCode)}`);
-    const data = await res.json();
-    if (res.ok && data.ok) {
-      const s = data.subscription;
-      out.textContent = `🟢 Active: ${s.channelName} · ${s.count} reacts/post · ${s.reactedPostsCount} posts boosted · Ends ${new Date(s.expiresAt).toLocaleDateString()}`;
-    } else {
-      out.textContent = `⚪ ${data.error || "Not active"}`;
-    }
-  } catch {
-    out.textContent = "❌ Error checking status.";
-  }
-}
-
-/* ==================== GOOGLE AUTH & CHANNEL POLL LOGIC ==================== */
-let pollUser = null;
-let selectedOptIndex = 0;
-let selectedOptName = "Option 1";
-let currentChannelName = "WhatsApp Channel";
-let pollJobTimer = null;
-
-function loginWithGoogleForPoll() {
-  const url = new URL(window.location.href);
-  url.searchParams.set("tab", "poll");
-  window.location.href = `${API_BASE}/auth/google?redirect=${encodeURIComponent(url.toString())}`;
-}
-
-async function initPollUserSession() {
-  try {
-    const res = await fetch(`${API_BASE}/api/poll/me`, {
-      credentials: "include",
-      headers: getAuthHeaders()
-    });
-    const data = await res.json();
-    document.getElementById("pollAuthLoading").classList.add("hidden");
-
+// ... existing code ... -->
     if (!res.ok || !data.ok) {
-      localStorage.removeItem("maliya_poll_jwt");
+      clearSavedAuthToken();
       document.getElementById("pollLoginGate").classList.remove("hidden");
       return;
     }
-
-    pollUser = data.user;
-    document.getElementById("pollLoginGate").classList.add("hidden");
-    document.getElementById("pollAppBox").classList.remove("hidden");
-    document.getElementById("navCoinPill").classList.remove("hidden");
-    document.getElementById("navProfileLink").classList.remove("hidden");
-    document.getElementById("navCoinVal").textContent = pollUser.coins;
-    document.getElementById("pollBalText").textContent = `${pollUser.coins} Coins`;
-    updatePollCost();
-  } catch {
-    document.getElementById("pollAuthLoading").classList.add("hidden");
-    document.getElementById("pollLoginGate").classList.remove("hidden");
-  }
-}
-
-function updatePollCost() {
-  const n = Math.max(1, parseInt(document.getElementById("pollVotesCount").value || "1", 10));
-  document.getElementById("pollCostText").textContent = `${n * 25} Coins`;
-}
-
-async function loadPollPreview() {
-  const pollUrl = (document.getElementById("pollUrl").value || "").trim();
-  const btn = document.getElementById("loadPollBtn");
-  const resBox = document.getElementById("pollResult");
-
-  if (!/^https:\/\/(www\.)?whatsapp\.com\/channel\/[A-Za-z0-9_-]+\/\d+/.test(pollUrl)) {
-    return showBox(resBox, "❌ Paste a valid poll message link (https://whatsapp.com/channel/CODE/123)", true);
-  }
-
-  btn.disabled = true;
-  btn.textContent = "Loading...";
-  resBox.className = "msg-box hidden";
-
-  try {
-    const res = await fetch(`${API_BASE}/api/poll/preview`, {
-      method: "POST",
-      credentials: "include",
-      headers: getAuthHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify({ pollUrl })
-    });
-    const data = await res.json();
-
-    if (res.status === 401) {
-      loginWithGoogleForPoll();
-      return;
-    }
-
-    if (!res.ok || !data.ok) {
-      return showBox(resBox, `❌ ${data.error || "Could not load poll."}`, true);
-    }
-
-    currentChannelName = data.channelName;
-    document.getElementById("pvChannelName").textContent = `📢 ${data.channelName}`;
-    document.getElementById("pvOnlineBots").textContent = `🤖 ${data.availableSessions} Bots`;
-    document.getElementById("pvQuestion").textContent = `📊 ${data.question}`;
-
-    const listEl = document.getElementById("pvOptionsList");
-    listEl.innerHTML = "";
-    selectedOptIndex = 0;
-    selectedOptName = data.options[0]?.name || "Option 1";
-
-    data.options.forEach((opt, idx) => {
-      const div = document.createElement("div");
-      div.className = "poll-opt-item" + (idx === 0 ? " selected" : "");
-      div.innerHTML = `<span>${opt.name}</span><span class="poll-radio"></span>`;
-      div.onclick = () => {
-        document.querySelectorAll(".poll-opt-item").forEach(el => el.classList.remove("selected"));
-        div.classList.add("selected");
-        selectedOptIndex = opt.index;
-        selectedOptName = opt.name;
-      };
-      listEl.appendChild(div);
-    });
-
-    document.getElementById("pollVotesCount").max = Math.max(1, data.availableSessions);
-    document.getElementById("pollPreviewBox").classList.remove("hidden");
-    document.getElementById("pollVoteControls").classList.remove("hidden");
-    showBox(resBox, "✅ Poll loaded! Select an option & click Cast Poll Votes.", false);
-  } catch {
-    showBox(resBox, "❌ Network error loading poll.", true);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "Load Poll";
-  }
-}
-
-async function castPollVotes() {
-  const pollUrl = (document.getElementById("pollUrl").value || "").trim();
-  const votesCount = parseInt(document.getElementById("pollVotesCount").value || "1", 10);
-  const btn = document.getElementById("castVoteBtn");
-  const resBox = document.getElementById("pollResult");
-
-  btn.disabled = true;
-  btn.innerHTML = `${SPIN_ICON}<span>Starting Safe Boost...</span>`;
-
-  try {
-    const res = await fetch(`${API_BASE}/api/poll/vote`, {
-      method: "POST",
-      credentials: "include",
-      headers: getAuthHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify({
-        pollUrl,
-        optionIndex: selectedOptIndex,
-        optionName: selectedOptName,
-        channelName: currentChannelName,
-        votesCount
-      })
-    });
-    const data = await res.json();
-
-    if (!res.ok || !data.ok) {
-      return showBox(resBox, `❌ ${data.error || "Failed to start votes."}`, true);
-    }
-
-    pollUser.coins = data.remainingCoins;
-    document.getElementById("navCoinVal").textContent = data.remainingCoins;
-    document.getElementById("pollBalText").textContent = `${data.remainingCoins} Coins`;
-
-    showBox(resBox, `✅ Started! Sending ${data.plannedVotes} votes for "${selectedOptName}".`, false);
-    launchEmojiBurst(["🗳️", "✅", "🔥"]);
-    document.getElementById("pollProgressBox").classList.remove("hidden");
-    trackPollJob(data.jobId);
-  } catch {
-    showBox(resBox, "❌ Server unreachable.", true);
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = `<span>Cast Poll Votes Now</span>`;
-  }
-}
-
-function trackPollJob(jobId) {
-  if (pollJobTimer) clearInterval(pollJobTimer);
-  pollJobTimer = setInterval(async () => {
-    try {
-      const res = await fetch(`${API_BASE}/api/poll/status/${encodeURIComponent(jobId)}`, {
-        credentials: "include",
-        headers: getAuthHeaders()
-      });
-      const data = await res.json();
-      if (!data.ok || !data.job) return;
-      const j = data.job;
-      const pct = j.totalPlanned > 0 ? Math.round((j.completed / j.totalPlanned) * 100) : 0;
-      document.getElementById("pollProgCount").textContent = `${j.completed} / ${j.totalPlanned}`;
-      document.getElementById("pollProgFill").style.width = `${pct}%`;
-      if (j.status === "completed") {
-        document.getElementById("pollProgStatus").textContent = "Completed ✅";
-        clearInterval(pollJobTimer);
-      }
-    } catch {}
-  }, 4000);
-}
-
+// ... existing code ... -->
 /* THEME & 3D CARD MOTION */
 (function(){
   function upd(t){document.querySelectorAll('[data-theme-btn]').forEach(b=>b.classList.toggle('active',b.dataset.themeBtn===t))}
@@ -1304,14 +889,71 @@ function trackPollJob(jobId) {
       box.appendChild(p);
     }
   });
+})();
 
+function triggerPaneAnimations(pane){
+  if(!pane)return;
+  const items=pane.querySelectorAll('.pane-child');
+  items.forEach(el=>{el.style.animation='none';});
+  void pane.offsetWidth;
+  items.forEach(el=>{el.style.animation='';});
+}
+
+window.setMode=function(mode){
+  const cm=document.getElementById('cardMotion');
+  const ss=document.getElementById('sideSingle');
+  const sw=document.getElementById('sideWeekly');
+  const spl=document.getElementById('sidePollLeft');
+  const spr=document.getElementById('sidePollRight');
+  const fs=document.getElementById('formStack'),tw=document.querySelector('.auth-tabs'),tb=document.querySelectorAll('.auth-tab');
+  const cur=fs.querySelector('.form-pane.active'),next=fs.querySelector('.form-pane[data-pane="'+mode+'"]');
+
+  if(next&&cur!==next){
+    fs.style.height=cur.offsetHeight+'px';void fs.offsetHeight;
+    cur.classList.remove('active');
+    next.classList.add('active');
+    triggerPaneAnimations(next);
+    fs.style.height=next.offsetHeight+'px';
+    setTimeout(()=>{fs.style.height='';},600);
+  }
+
+  tw.dataset.active=mode;
+  tb.forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));
+
+  cm.classList.remove('is-right','is-left','is-center');
+  ss.classList.remove('active');
+  sw.classList.remove('active');
+  spl.classList.remove('active');
+  spr.classList.remove('active');
+
+  if(mode==='weekly'){
+    cm.classList.add('is-left');
+    void sw.offsetWidth;sw.classList.add('active');
+  } else if(mode==='poll'){
+    cm.classList.add('is-center');
+    void spl.offsetWidth;spl.classList.add('active');
+    void spr.offsetWidth;spr.classList.add('active');
+  } else {
+    cm.classList.add('is-right');
+    void ss.offsetWidth;ss.classList.add('active');
+  }
+};
+document.querySelectorAll('.auth-tab').forEach(b=>b.addEventListener('click',()=>window.setMode(b.dataset.mode)));
+
+// Run initial tab selection AFTER window.setMode is defined
+(function(){
   const urlTab = new URLSearchParams(window.location.search).get("tab");
   if (urlTab === "poll") {
     window.setMode("poll");
+  } else if (urlTab === "weekly") {
+    window.setMode("weekly");
   } else {
     setTimeout(()=>{
       const cm=document.getElementById('cardMotion'),ss=document.getElementById('sideSingle');
-      if(cm&&ss&&!cm.classList.contains('is-center')){cm.classList.add('is-right');ss.classList.add('active');}
+      if(cm&&ss&&!cm.classList.contains('is-center')&&!cm.classList.contains('is-left')){
+        cm.classList.add('is-right');
+        ss.classList.add('active');
+      }
     },1200);
   }
 })();
