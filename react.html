@@ -347,24 +347,29 @@ button,input{font-family:inherit}
 }
 .google-btn:hover{transform:translateY(-2px);border-color:var(--t-accent)}
 
-/* POLL PREVIEW & OPTIONS */
+/* POLL PREVIEW & MULTI-CHOICE OPTIONS */
 .poll-preview-box{
   background:var(--t-input);border:1.5px solid var(--t-border);
   border-radius:16px;padding:13px;margin-bottom:12px
 }
 .poll-meta-row{display:flex;justify-content:space-between;font-size:11px;font-weight:800;color:var(--t-accent);margin-bottom:6px}
-.poll-q-text{font-size:13.5px;font-weight:800;margin-bottom:9px;color:var(--t-txt)}
+.poll-q-text{font-size:13.5px;font-weight:800;margin-bottom:4px;color:var(--t-txt)}
+.poll-multi-hint{font-size:11px;font-weight:700;color:var(--t-txt-3);margin-bottom:9px}
 .poll-opt-item{
-  display:flex;align-items:center;justify-content:space-between;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
   padding:9px 12px;margin-bottom:6px;border-radius:10px;
   border:1.5px solid var(--t-input-border);background:var(--t-card-solid);
-  cursor:pointer;font-size:12.5px;font-weight:700;transition:all .15s
+  cursor:pointer;font-size:12.5px;font-weight:700;transition:all .15s;user-select:none
 }
 .poll-opt-item:hover{border-color:var(--t-accent)}
 .poll-opt-item.selected{border-color:var(--t-accent);background:rgba(99,102,241,.14)}
-.poll-radio{width:16px;height:16px;border-radius:50%;border:2px solid var(--t-txt-4);display:flex;align-items:center;justify-content:center}
-.poll-opt-item.selected .poll-radio{border-color:var(--t-accent)}
-.poll-opt-item.selected .poll-radio::after{content:'';width:8px;height:8px;border-radius:50%;background:var(--t-accent)}
+.poll-check{
+  width:18px;height:18px;border-radius:6px;flex-shrink:0;
+  border:2px solid var(--t-txt-4);display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:900;color:#fff;transition:all .15s
+}
+.poll-opt-item.selected .poll-check{border-color:var(--t-accent);background:var(--t-accent)}
+.poll-opt-item.selected .poll-check::after{content:'✓'}
 
 .poll-progress-wrap{
   margin-top:10px;background:var(--t-input);border:1px solid var(--t-border);
@@ -593,14 +598,14 @@ button,input{font-family:inherit}
 <div id="sidePollLeft" class="side-panel dual-left">
   <div class="side-inner">
     <div class="stagger-child side-greeting" style="--delay:0s">
-      <span class="badge"><span class="live-dot"></span>Google Protected · Coin System</span>
+      <span class="badge"><span class="live-dot"></span>Google Protected · Full Pack System</span>
       <h1>Channel<br><span>Poll Votes</span></h1>
-      <p>Sign in with Google to receive <strong>50 Free Coins</strong> instantly. Each real multi-device vote costs <strong>25 Coins</strong>.</p>
+      <p>Sign in with Google to receive <strong>50 Free Coins</strong> instantly. Each <strong>Full Vote Pack</strong> costs only <strong>25 Coins</strong>.</p>
     </div>
     <div class="stagger-child stats-row" style="--delay:.2s">
       <div class="stat-item"><strong>50 🪙</strong><span>Free Bonus</span></div>
-      <div class="stat-item"><strong>25 🪙</strong><span>Per Vote</span></div>
-      <div class="stat-item"><strong>0%</strong><span>Follow Req</span></div>
+      <div class="stat-item"><strong>25 🪙</strong><span>Full Pack</span></div>
+      <div class="stat-item"><strong>2s</strong><span>Interval</span></div>
     </div>
   </div>
 </div>
@@ -609,14 +614,14 @@ button,input{font-family:inherit}
 <div id="sidePollRight" class="side-panel dual-right">
   <div class="side-inner">
     <div class="stagger-child side-greeting" style="--delay:0s">
-      <span class="badge"><span class="purple-dot"></span>Anti-Ban · 4-Minute Delivery</span>
+      <span class="badge"><span class="purple-dot"></span>Fast Pacing · Multi-Choice</span>
       <h1>Safe Multi-Bot<br><span>Vote Cluster</span></h1>
-      <p>Votes are staggered gradually across 4 minutes with randomized delays so bot accounts stay 100% safe.</p>
+      <p>Each vote dispatches within 3 seconds with a clean 2-second interval between bots, supporting multi-choice poll options.</p>
     </div>
     <ul class="stagger-child benefit-list" style="--delay:.2s">
       <li><span class="check">✓</span>No channel follow required</li>
-      <li><span class="check">✓</span>Live poll question &amp; option preview</li>
-      <li><span class="check">✓</span>Combines MALIYA-MD + Partner bots</li>
+      <li><span class="check">✓</span>Live poll question &amp; exact options</li>
+      <li><span class="check">✓</span>Supports single &amp; multi-choice voting</li>
       <li><span class="check">✓</span>Automatic coin refund on any error</li>
     </ul>
   </div>
@@ -747,7 +752,7 @@ button,input{font-family:inherit}
         <!-- PANE 3: CHANNEL POLL VOTES -->
         <div class="form-pane" data-pane="poll">
           <h2 class="pane-title pane-child" style="--d:.35s">Channel Poll Booster</h2>
-          <p class="pane-sub pane-child" style="--d:.45s">25 Coins per Vote · Safe 4-Minute Delivery</p>
+          <p class="pane-sub pane-child" style="--d:.45s">25 Coins per Full Vote Pack · Fast 2s Interval Delivery</p>
 
           <div id="pollAuthLoading" style="text-align:center;padding:22px 0;font-size:13px;font-weight:700;color:var(--t-txt-3)">
             Verifying Google Session...
@@ -755,7 +760,7 @@ button,input{font-family:inherit}
 
           <div id="pollLoginGate" class="hidden" style="text-align:center;padding:8px 0">
             <div style="background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.35);color:#10b981;border-radius:12px;padding:10px;font-size:12px;font-weight:800;margin-bottom:14px">
-              🎁 New Google Sign-Ins get 50 FREE Coins (2 Free Votes)!
+              🎁 New Google Sign-Ins get 50 FREE Coins (2 Full Poll Packs)!
             </div>
             <button type="button" onclick="loginWithGoogleForPoll()" class="google-btn">
               <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="19" height="19" alt="Google">
@@ -777,25 +782,21 @@ button,input{font-family:inherit}
             <div id="pollPreviewBox" class="poll-preview-box hidden">
               <div class="poll-meta-row">
                 <span id="pvChannelName">📢 Channel</span>
-                <span id="pvOnlineBots">🤖 0 Ready</span>
+                <span id="pvOnlineBots">🤖 0 Bots in Pack</span>
               </div>
               <div id="pvQuestion" class="poll-q-text">Poll Question</div>
+              <div id="pvMultiHint" class="poll-multi-hint">☑️ Tap one or multiple options below</div>
               <div id="pvOptionsList"></div>
             </div>
 
             <div id="pollVoteControls" class="hidden">
-              <div class="form-group">
-                <label class="field-label" for="pollVotesCount">2. Votes Count (25 Coins each)</label>
-                <input type="number" id="pollVotesCount" class="input" min="1" max="50" value="2" oninput="updatePollCost()">
-              </div>
-
-              <div style="display:flex;justify-content:space-between;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.25);padding:9px 12px;border-radius:11px;font-size:12px;font-weight:800;margin-bottom:12px">
-                <span>Cost: <span id="pollCostText" style="color:var(--t-accent)">50 Coins</span></span>
+              <div style="display:flex;justify-content:space-between;align-items:center;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.25);padding:10px 12px;border-radius:11px;font-size:12px;font-weight:800;margin-bottom:12px">
+                <span>Full Pack (<span id="pollPackVotesText">0</span> Votes): <span id="pollCostText" style="color:var(--t-accent)">25 Coins</span></span>
                 <span>Balance: <span id="pollBalText" style="color:#f59e0b">0 Coins</span></span>
               </div>
 
               <button type="button" id="castVoteBtn" onclick="castPollVotes()" class="btn-primary">
-                <span>Cast Poll Votes Now</span>
+                <span>Cast Full Poll Vote Pack (25 Coins)</span>
               </button>
             </div>
 
@@ -810,7 +811,7 @@ button,input{font-family:inherit}
                 <div id="pollProgFill" class="poll-bar-fill"></div>
               </div>
               <div style="font-size:10.5px;color:var(--t-txt-3)">
-                🛡️ Staggered over 4 mins · Zero channel follow
+                ⚡ 3s vote dispatch · 2s interval · Zero channel follow
               </div>
             </div>
           </div>
@@ -849,9 +850,11 @@ function clearSavedAuthToken() {
 }
 
 let cameFromGoogleLogin = false;
+let initialTabParam = "";
 (function() {
   const u = new URL(window.location.href);
   const tok = u.searchParams.get("auth_token");
+  initialTabParam = u.searchParams.get("tab") || "";
   if (tok) {
     setAuthToken5Days(tok);
     cameFromGoogleLogin = true;
@@ -1126,13 +1129,14 @@ async function checkWeeklyStatus() {
 
 /* ==================== GOOGLE AUTH & CHANNEL POLL LOGIC ==================== */
 let pollUser = null;
-let selectedOptIndex = 0;
-let selectedOptName = "Option 1";
+let loadedPollOptions = [];
+let selectedOptIndices = new Set([0]);
 let currentChannelName = "WhatsApp Channel";
+let availablePackVotes = 0;
 let pollJobTimer = null;
 
 function loginWithGoogleForPoll() {
-  const cleanRedirect = `${window.location.origin}/react.html`;
+  const cleanRedirect = `${window.location.origin}/react.html?tab=poll`;
   window.location.href = `${API_BASE}/auth/google?redirect=${encodeURIComponent(cleanRedirect)}`;
 }
 
@@ -1158,16 +1162,10 @@ async function initPollUserSession() {
     document.getElementById("navProfileLink").classList.remove("hidden");
     document.getElementById("navCoinVal").textContent = pollUser.coins;
     document.getElementById("pollBalText").textContent = `${pollUser.coins} Coins`;
-    updatePollCost();
   } catch {
     document.getElementById("pollAuthLoading").classList.add("hidden");
     document.getElementById("pollLoginGate").classList.remove("hidden");
   }
-}
-
-function updatePollCost() {
-  const n = Math.max(1, parseInt(document.getElementById("pollVotesCount").value || "1", 10));
-  document.getElementById("pollCostText").textContent = `${n * 25} Coins`;
 }
 
 async function loadPollPreview() {
@@ -1202,32 +1200,61 @@ async function loadPollPreview() {
     }
 
     currentChannelName = data.channelName;
+    availablePackVotes = Math.max(1, Number(data.availableSessions || 1));
+    loadedPollOptions = Array.isArray(data.options) ? data.options : [];
+    selectedOptIndices = new Set([loadedPollOptions[0]?.index ?? 0]);
+
     document.getElementById("pvChannelName").textContent = `📢 ${data.channelName}`;
-    document.getElementById("pvOnlineBots").textContent = `🤖 ${data.availableSessions} Bots`;
+    document.getElementById("pvOnlineBots").textContent = `🤖 ${availablePackVotes} Votes / Pack`;
     document.getElementById("pvQuestion").textContent = `📊 ${data.question}`;
+    document.getElementById("pollPackVotesText").textContent = String(availablePackVotes);
+
+    const maxSelectable = Number(data.selectableCount || 0);
+    document.getElementById("pvMultiHint").textContent =
+      maxSelectable === 1
+        ? "☑️ Single-choice poll (1 option)"
+        : "☑️ Multi-choice supported — tap one or more options";
 
     const listEl = document.getElementById("pvOptionsList");
     listEl.innerHTML = "";
-    selectedOptIndex = 0;
-    selectedOptName = data.options[0]?.name || "Option 1";
 
-    data.options.forEach((opt, idx) => {
+    loadedPollOptions.forEach((opt) => {
       const div = document.createElement("div");
-      div.className = "poll-opt-item" + (idx === 0 ? " selected" : "");
-      div.innerHTML = `<span>${opt.name}</span><span class="poll-radio"></span>`;
+      div.className = "poll-opt-item" + (selectedOptIndices.has(opt.index) ? " selected" : "");
+
+      const labelSpan = document.createElement("span");
+      labelSpan.textContent = opt.name;
+
+      const checkSpan = document.createElement("span");
+      checkSpan.className = "poll-check";
+
+      div.appendChild(labelSpan);
+      div.appendChild(checkSpan);
+
       div.onclick = () => {
-        document.querySelectorAll(".poll-opt-item").forEach(el => el.classList.remove("selected"));
-        div.classList.add("selected");
-        selectedOptIndex = opt.index;
-        selectedOptName = opt.name;
+        if (maxSelectable === 1) {
+          selectedOptIndices.clear();
+          selectedOptIndices.add(opt.index);
+          document.querySelectorAll(".poll-opt-item").forEach((el) => el.classList.remove("selected"));
+          div.classList.add("selected");
+          return;
+        }
+
+        if (selectedOptIndices.has(opt.index)) {
+          if (selectedOptIndices.size === 1) return; // Keep at least 1 option selected
+          selectedOptIndices.delete(opt.index);
+          div.classList.remove("selected");
+        } else {
+          selectedOptIndices.add(opt.index);
+          div.classList.add("selected");
+        }
       };
       listEl.appendChild(div);
     });
 
-    document.getElementById("pollVotesCount").max = Math.max(1, data.availableSessions);
     document.getElementById("pollPreviewBox").classList.remove("hidden");
     document.getElementById("pollVoteControls").classList.remove("hidden");
-    showBox(resBox, "✅ Poll loaded! Select an option & click Cast Poll Votes.", false);
+    showBox(resBox, `✅ Poll loaded (${loadedPollOptions.length} options)! Select choice(s) & click Cast Full Poll Vote Pack.`, false);
   } catch {
     showBox(resBox, "❌ Network error loading poll.", true);
   } finally {
@@ -1238,12 +1265,20 @@ async function loadPollPreview() {
 
 async function castPollVotes() {
   const pollUrl = (document.getElementById("pollUrl").value || "").trim();
-  const votesCount = parseInt(document.getElementById("pollVotesCount").value || "1", 10);
   const btn = document.getElementById("castVoteBtn");
   const resBox = document.getElementById("pollResult");
 
+  const chosenIndices = Array.from(selectedOptIndices).sort((a, b) => a - b);
+  if (!chosenIndices.length) {
+    return showBox(resBox, "❌ Select at least 1 poll option first.", true);
+  }
+
+  const chosenNames = chosenIndices
+    .map((idx) => loadedPollOptions.find((o) => o.index === idx)?.name || `Option ${idx + 1}`)
+    .join(", ");
+
   btn.disabled = true;
-  btn.innerHTML = `${SPIN_ICON}<span>Starting Safe Boost...</span>`;
+  btn.innerHTML = `${SPIN_ICON}<span>Starting Full Vote Pack...</span>`;
 
   try {
     const res = await fetch(`${API_BASE}/api/poll/vote`, {
@@ -1252,10 +1287,11 @@ async function castPollVotes() {
       headers: getAuthHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify({
         pollUrl,
-        optionIndex: selectedOptIndex,
-        optionName: selectedOptName,
+        optionIndex: chosenIndices[0],
+        optionIndices: chosenIndices,
+        optionName: chosenNames,
         channelName: currentChannelName,
-        votesCount
+        votesCount: availablePackVotes
       })
     });
     const data = await res.json();
@@ -1268,7 +1304,7 @@ async function castPollVotes() {
     document.getElementById("navCoinVal").textContent = data.remainingCoins;
     document.getElementById("pollBalText").textContent = `${data.remainingCoins} Coins`;
 
-    showBox(resBox, `✅ Started! Sending ${data.plannedVotes} votes for "${selectedOptName}".`, false);
+    showBox(resBox, `✅ Full Pack Started (${data.plannedVotes} bots, 25 Coins)! Voting for: "${chosenNames}".`, false);
     launchEmojiBurst(["🗳️", "✅", "🔥"]);
     document.getElementById("pollProgressBox").classList.remove("hidden");
     trackPollJob(data.jobId);
@@ -1276,7 +1312,7 @@ async function castPollVotes() {
     showBox(resBox, "❌ Server unreachable.", true);
   } finally {
     btn.disabled = false;
-    btn.innerHTML = `<span>Cast Poll Votes Now</span>`;
+    btn.innerHTML = `<span>Cast Full Poll Vote Pack (25 Coins)</span>`;
   }
 }
 
@@ -1299,7 +1335,7 @@ function trackPollJob(jobId) {
         clearInterval(pollJobTimer);
       }
     } catch {}
-  }, 4000);
+  }, 2500);
 }
 
 /* THEME & 3D CARD MOTION */
@@ -1380,8 +1416,10 @@ document.querySelectorAll('.auth-tab').forEach(b=>{
 });
 
 // Initial mode on load
-if (cameFromGoogleLogin) {
+if (cameFromGoogleLogin || initialTabParam === 'poll') {
   window.setMode('poll');
+} else if (initialTabParam === 'weekly') {
+  window.setMode('weekly');
 } else {
   setTimeout(()=>{
     const cm=document.getElementById('cardMotion'),ss=document.getElementById('sideSingle');
