@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WA Channel React &amp; Poll Booster — MALIYA-MD</title>
+<title>WA Channel React Booster — MALIYA-MD</title>
 <link rel="icon" type="image/png" href="https://maliya-md.vercel.app/logo.png">
 <script>(function(){var t=localStorage.getItem('maliya_theme')||'white';document.documentElement.setAttribute('data-theme',t)})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -198,7 +198,7 @@ button,input{font-family:inherit}
 .auth-tabs[data-active="weekly"] .auth-tab-pill{transform:translateX(100%)}
 .auth-tabs[data-active="poll"] .auth-tab-pill{transform:translateX(200%)}
 .auth-tab{
-  position:relative;z-index:1;padding:8px 4px;
+  position:relative;z-index:2;padding:8px 4px;
   font-size:12px;font-weight:700;color:var(--t-txt-3);
   border-radius:10px;transition:color .3s;cursor:pointer;background:none;border:none
 }
@@ -256,7 +256,7 @@ button,input{font-family:inherit}
 }
 .range-slider::-webkit-slider-thumb:hover{transform:scale(1.18)}
 
-/* PRESET & CATEGORY PILLS */
+/* PRESET & HELPER PILLS */
 .preset-group{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
 .preset-pill{
   padding:3px 8px;border-radius:6px;
@@ -271,7 +271,6 @@ button,input{font-family:inherit}
   color:var(--t-accent);
   transform:translateY(-1px)
 }
-
 .cat-bar{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px}
 
 /* SELECTED EMOJI TRAY */
@@ -298,7 +297,7 @@ button,input{font-family:inherit}
   white-space:nowrap
 }
 
-/* EMOJI 5-COLUMN SCROLLABLE GRID */
+/* EMOJI 5x4 GRID */
 .emoji-grid{
   display:grid;
   grid-template-columns:repeat(5,1fr);
@@ -394,7 +393,7 @@ button,input{font-family:inherit}
   100%{opacity:0;transform:translate(var(--bx),var(--by)) scale(1.35) rotate(var(--br))}
 }
 
-/* SIDE PANELS (DESKTOP + DUAL CENTER MODE FOR POLL) */
+/* SIDE PANELS (DESKTOP + DUAL CENTER FOR POLL) */
 .side-panel{
   position:fixed;top:0;bottom:0;width:50%;
   display:none;align-items:center;
@@ -550,7 +549,7 @@ button,input{font-family:inherit}
     <div class="stagger-child side-greeting" style="--delay:0s">
       <span class="badge"><span class="live-dot"></span>Instant Burst · Up to 3,500 Reacts</span>
       <h1>Boost Any<br><span>Channel Post</span></h1>
-      <p>Paste a specific WhatsApp Channel post link, pick up to 5 emojis across Love, Funny, Sad &amp; Hype categories, and send organic reactions.</p>
+      <p>Paste a specific WhatsApp Channel post link, pick up to 5 emojis across Love, Funny, Sad &amp; Hype categories, and send high-speed organic reactions.</p>
     </div>
     <div class="stagger-child emoji-row" style="--delay:.15s">
       <span class="emoji-chip">👍</span><span class="emoji-chip">❤️</span><span class="emoji-chip">😂</span><span class="emoji-chip">😢</span><span class="emoji-chip">🔥</span>
@@ -638,8 +637,8 @@ button,input{font-family:inherit}
       <!-- 3-COLUMN MODE TABS -->
       <div class="auth-tabs stagger" data-active="single" style="animation-delay:.3s">
         <span class="auth-tab-pill"></span>
-        <button type="button" class="auth-tab active" data-mode="single">Single Post</button>
-        <button type="button" class="auth-tab" data-mode="weekly">Weekly Pack</button>
+        <button type="button" class="auth-tab active" data-mode="single">Single Post Pack</button>
+        <button type="button" class="auth-tab" data-mode="weekly">Weekly Auto Pack</button>
         <button type="button" class="auth-tab" data-mode="poll">Poll Votes</button>
       </div>
 
@@ -745,7 +744,7 @@ button,input{font-family:inherit}
           </form>
         </div>
 
-        <!-- PANE 3: CHANNEL POLL VOTES (GOOGLE LOGIN + LIVE POLL PREVIEW) -->
+        <!-- PANE 3: CHANNEL POLL VOTES -->
         <div class="form-pane" data-pane="poll">
           <h2 class="pane-title pane-child" style="--d:.35s">Channel Poll Booster</h2>
           <p class="pane-sub pane-child" style="--d:.45s">25 Coins per Vote · Safe 4-Minute Delivery</p>
@@ -827,6 +826,10 @@ const API_BASE = (location.hostname === "localhost" || location.hostname === "12
   ? ""
   : "https://railway-backend-production-0b48.up.railway.app";
 
+const SEND_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>';
+const CAL_ICON  = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M9 16l2 2 4-4"/></svg>';
+const SPIN_ICON = '<svg class="spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>';
+
 // 5-Day Persistent Login (Cookie + LocalStorage)
 function setAuthToken5Days(tok) {
   localStorage.setItem("maliya_poll_jwt", tok);
@@ -845,13 +848,16 @@ function clearSavedAuthToken() {
   document.cookie = "maliya_poll_jwt=; path=/; max-age=0";
 }
 
+let cameFromGoogleLogin = false;
 (function() {
   const u = new URL(window.location.href);
   const tok = u.searchParams.get("auth_token");
   if (tok) {
     setAuthToken5Days(tok);
+    cameFromGoogleLogin = true;
     u.searchParams.delete("auth_token");
-    window.history.replaceState({}, "", u.toString());
+    u.searchParams.delete("tab");
+    window.history.replaceState({}, "", u.pathname);
   }
 })();
 
@@ -859,13 +865,443 @@ function getAuthHeaders(extra = {}) {
   const tok = getSavedAuthToken();
   return tok ? { ...extra, Authorization: `Bearer ${tok}` } : extra;
 }
-// ... existing code ... -->
+
+// Max 5 Emojis + Multi-Category Library (All, Love, Funny, Sad, Hype)
+const MAX_EMOJIS = 5;
+const EMOJI_CATEGORIES = {
+  all: [
+    "👍","❤️","😂","😢","🔥","😮","🙏","🎉","😍","👏",
+    "🤣","😭","💖","🥰","😘","💔","🥺","😔","😞","😥",
+    "😆","😹","😜","🤪","😎","💯","🤩","🥳","🚀","👑",
+    "💥","✨","🙌","💪","🤝","😱","🤯","😤","😡","💀"
+  ],
+  love: ["❤️","💖","🥰","😍","😘","💕","💞","💓","💗","💘","💝","🫶","🌹","💋","🤗"],
+  funny: ["😂","🤣","😹","😆","😜","🤪","😝","🤭","🙃","🤡","💀","😅","😁","😄","🥳"],
+  sad: ["😢","😭","💔","🥺","😔","😞","😥","😓","😟","😿","🥀","😩","😫","😣","🙁"],
+  hype: ["🔥","🚀","💯","👑","⚡","💥","✨","🎉","🤩","😎","🏆","🙌","👏","💪","🌟"]
+};
+
+const CAT_LABELS = {
+  all: "All",
+  love: "❤️ Love",
+  funny: "😂 Funny",
+  sad: "😢 Sad",
+  hype: "🔥 Hype"
+};
+
+let singleCat = "all";
+let weeklyCat = "all";
+let singleChosen = ["👍"];
+let weeklyChosen = ["❤️", "🔥", "🚀"];
+
+function syncCount(mode, val) {
+  document.getElementById(mode + "Count").value = val;
+  document.getElementById(mode + "Range").value = val;
+}
+
+function randomSelect(mode) {
+  const pool = EMOJI_CATEGORIES[mode === "single" ? singleCat : weeklyCat] || EMOJI_CATEGORIES.all;
+  const shuffled = [...pool].sort(() => Math.random() - 0.5).slice(0, MAX_EMOJIS);
+  if (mode === "single") singleChosen = shuffled;
+  else weeklyChosen = shuffled;
+  refreshPickers();
+}
+
+function clearEmojis(mode) {
+  if (mode === "single") singleChosen = [];
+  else weeklyChosen = [];
+  refreshPickers();
+}
+
+function renderEmojiPicker(catBarId, gridId, trayId, badgeId, chosenArr, currentCat, onCatChange) {
+  const catBar = document.getElementById(catBarId);
+  const grid = document.getElementById(gridId);
+  const tray = document.getElementById(trayId);
+  const badge = document.getElementById(badgeId);
+
+  catBar.innerHTML = "";
+  Object.keys(CAT_LABELS).forEach(catKey => {
+    const cBtn = document.createElement("button");
+    cBtn.type = "button";
+    cBtn.className = "preset-pill" + (currentCat === catKey ? " active-cat" : "");
+    cBtn.textContent = CAT_LABELS[catKey];
+    cBtn.onclick = () => onCatChange(catKey);
+    catBar.appendChild(cBtn);
+  });
+
+  tray.innerHTML = "";
+  const chipWrap = document.createElement("div");
+  chipWrap.className = "tray-emojis";
+
+  if (chosenArr.length === 0) {
+    const empty = document.createElement("span");
+    empty.style.cssText = "font-size:11.5px;color:var(--t-txt-4);font-weight:600";
+    empty.textContent = "Tap up to 5 emojis below";
+    chipWrap.appendChild(empty);
+  } else {
+    chosenArr.forEach(emoji => {
+      const chip = document.createElement("span");
+      chip.className = "tray-chip";
+      chip.title = "Click to remove";
+      chip.textContent = emoji;
+      chip.onclick = () => {
+        const i = chosenArr.indexOf(emoji);
+        if (i > -1) chosenArr.splice(i, 1);
+        refreshPickers();
+      };
+      chipWrap.appendChild(chip);
+    });
+  }
+  tray.appendChild(chipWrap);
+  badge.textContent = `${chosenArr.length} / ${MAX_EMOJIS}`;
+
+  const list = EMOJI_CATEGORIES[currentCat] || EMOJI_CATEGORIES.all;
+  grid.innerHTML = "";
+  list.forEach(emoji => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "emoji-btn" + (chosenArr.includes(emoji) ? " on" : "");
+    btn.textContent = emoji;
+    btn.onclick = () => {
+      const idx = chosenArr.indexOf(emoji);
+      if (idx > -1) {
+        chosenArr.splice(idx, 1);
+      } else if (chosenArr.length < MAX_EMOJIS) {
+        chosenArr.push(emoji);
+      } else {
+        badge.style.transform = "scale(1.18)";
+        setTimeout(() => badge.style.transform = "", 200);
+        return;
+      }
+      refreshPickers();
+    };
+    grid.appendChild(btn);
+  });
+}
+
+function refreshPickers() {
+  renderEmojiPicker("singleCatBar", "singleEmojiGrid", "singleTray", "singleSelBadge", singleChosen, singleCat, (c) => {
+    singleCat = c;
+    refreshPickers();
+  });
+  renderEmojiPicker("weeklyCatBar", "weeklyEmojiGrid", "weeklyTray", "weeklySelBadge", weeklyChosen, weeklyCat, (c) => {
+    weeklyCat = c;
+    refreshPickers();
+  });
+}
+refreshPickers();
+
+function showBox(el, text, isErr) {
+  el.textContent = text;
+  el.className = "msg-box " + (isErr ? "err" : "ok");
+}
+
+function launchEmojiBurst(emojis) {
+  const list = emojis.length ? emojis : ["👍", "❤️", "🔥"];
+  const cx = window.innerWidth / 2;
+  const cy = window.innerHeight * 0.62;
+  for (let i = 0; i < 18; i++) {
+    const el = document.createElement("div");
+    el.className = "burst-emoji";
+    el.textContent = list[i % list.length];
+    const angle = (Math.PI * 2 * i) / 18 + (Math.random() - 0.5) * 0.4;
+    const dist = 120 + Math.random() * 190;
+    const bx = Math.cos(angle) * dist + "px";
+    const by = (Math.sin(angle) * dist - 120) + "px";
+    const br = ((Math.random() - 0.5) * 90) + "deg";
+    el.style.cssText = `left:${cx}px;top:${cy}px;--bx:${bx};--by:${by};--br:${br}`;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 1650);
+  }
+}
+
+/* SINGLE POST SUBMIT */
+document.getElementById("singleForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const url = document.getElementById("singleUrl").value.trim();
+  const count = Number(document.getElementById("singleCount").value);
+  const btn = document.getElementById("singleBtn");
+  const box = document.getElementById("singleMsg");
+
+  if (!singleChosen.length) return showBox(box, "Select at least 1 emoji.", true);
+
+  btn.disabled = true;
+  btn.innerHTML = `${SPIN_ICON}<span>Dispatching Reacts...</span>`;
+  box.className = "msg-box hidden";
+
+  try {
+    const res = await fetch(`${API_BASE}/api/react/single`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url, count, emojis: singleChosen })
+    });
+    const data = await res.json();
+    if (res.ok && data.ok) {
+      showBox(box, `✅ ${data.message} (Post #${data.postId})`, false);
+      launchEmojiBurst(singleChosen);
+    } else {
+      showBox(box, `❌ ${data.error || "Request failed."}`, true);
+    }
+  } catch {
+    showBox(box, "❌ Network error. Could not reach backend server.", true);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `${SEND_ICON}<span>Send Instant Reacts</span>`;
+  }
+});
+
+/* WEEKLY AUTO PACK SUBMIT */
+document.getElementById("weeklyForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const url = document.getElementById("weeklyUrl").value.trim();
+  const count = Number(document.getElementById("weeklyCount").value);
+  const btn = document.getElementById("weeklyBtn");
+  const box = document.getElementById("weeklyMsg");
+
+  if (!weeklyChosen.length) return showBox(box, "Select at least 1 emoji.", true);
+
+  btn.disabled = true;
+  btn.innerHTML = `${SPIN_ICON}<span>Resolving Channel JID...</span>`;
+  box.className = "msg-box hidden";
+
+  try {
+    const res = await fetch(`${API_BASE}/api/react/weekly`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url, count, emojis: weeklyChosen })
+    });
+    const data = await res.json();
+    if (res.ok && data.ok && data.subscription) {
+      const s = data.subscription;
+      box.className = "msg-box ok";
+      box.style.textAlign = "left";
+      box.textContent = "";
+
+      const lines = [
+        `✅ ${data.message}`,
+        `📢 Channel: ${s.channelName}`,
+        `🆔 JID: ${s.jid}`,
+        `⏳ Expires: ${new Date(s.expiresAt).toLocaleString()}`
+      ];
+      lines.forEach((txt, i) => {
+        const div = document.createElement("div");
+        if (i === 0) div.style.fontWeight = "800";
+        div.textContent = txt;
+        box.appendChild(div);
+      });
+      launchEmojiBurst(weeklyChosen);
+    } else {
+      showBox(box, `❌ ${data.error || "Activation failed."}`, true);
+    }
+  } catch {
+    showBox(box, "❌ Network error. Could not reach backend server.", true);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `${CAL_ICON}<span>Activate 1-Week Auto Pack</span>`;
+  }
+});
+
+/* CHECK WEEKLY SUBSCRIPTION STATUS */
+async function checkWeeklyStatus() {
+  const raw = document.getElementById("checkCodeInput").value.trim();
+  const out = document.getElementById("checkStatusResult");
+  const codeMatch = raw.match(/channel\/([A-Za-z0-9_-]{10,45})/);
+  const inviteCode = codeMatch ? codeMatch[1] : raw;
+  if (!inviteCode) return;
+
+  out.textContent = "Checking...";
+  try {
+    const res = await fetch(`${API_BASE}/api/react/weekly/${encodeURIComponent(inviteCode)}`);
+    const data = await res.json();
+    if (res.ok && data.ok) {
+      const s = data.subscription;
+      out.textContent = `🟢 Active: ${s.channelName} · ${s.count} reacts/post · ${s.reactedPostsCount} posts boosted · Ends ${new Date(s.expiresAt).toLocaleDateString()}`;
+    } else {
+      out.textContent = `⚪ ${data.error || "Not active"}`;
+    }
+  } catch {
+    out.textContent = "❌ Error checking status.";
+  }
+}
+
+/* ==================== GOOGLE AUTH & CHANNEL POLL LOGIC ==================== */
+let pollUser = null;
+let selectedOptIndex = 0;
+let selectedOptName = "Option 1";
+let currentChannelName = "WhatsApp Channel";
+let pollJobTimer = null;
+
+function loginWithGoogleForPoll() {
+  const cleanRedirect = `${window.location.origin}/react.html`;
+  window.location.href = `${API_BASE}/auth/google?redirect=${encodeURIComponent(cleanRedirect)}`;
+}
+
+async function initPollUserSession() {
+  try {
+    const res = await fetch(`${API_BASE}/api/poll/me`, {
+      credentials: "include",
+      headers: getAuthHeaders()
+    });
+    const data = await res.json();
+    document.getElementById("pollAuthLoading").classList.add("hidden");
+
     if (!res.ok || !data.ok) {
       clearSavedAuthToken();
       document.getElementById("pollLoginGate").classList.remove("hidden");
       return;
     }
-// ... existing code ... -->
+
+    pollUser = data.user;
+    document.getElementById("pollLoginGate").classList.add("hidden");
+    document.getElementById("pollAppBox").classList.remove("hidden");
+    document.getElementById("navCoinPill").classList.remove("hidden");
+    document.getElementById("navProfileLink").classList.remove("hidden");
+    document.getElementById("navCoinVal").textContent = pollUser.coins;
+    document.getElementById("pollBalText").textContent = `${pollUser.coins} Coins`;
+    updatePollCost();
+  } catch {
+    document.getElementById("pollAuthLoading").classList.add("hidden");
+    document.getElementById("pollLoginGate").classList.remove("hidden");
+  }
+}
+
+function updatePollCost() {
+  const n = Math.max(1, parseInt(document.getElementById("pollVotesCount").value || "1", 10));
+  document.getElementById("pollCostText").textContent = `${n * 25} Coins`;
+}
+
+async function loadPollPreview() {
+  const pollUrl = (document.getElementById("pollUrl").value || "").trim();
+  const btn = document.getElementById("loadPollBtn");
+  const resBox = document.getElementById("pollResult");
+
+  if (!/^https:\/\/(www\.)?whatsapp\.com\/channel\/[A-Za-z0-9_-]+\/\d+/.test(pollUrl)) {
+    return showBox(resBox, "❌ Paste a valid poll message link (https://whatsapp.com/channel/CODE/123)", true);
+  }
+
+  btn.disabled = true;
+  btn.textContent = "Loading...";
+  resBox.className = "msg-box hidden";
+
+  try {
+    const res = await fetch(`${API_BASE}/api/poll/preview`, {
+      method: "POST",
+      credentials: "include",
+      headers: getAuthHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ pollUrl })
+    });
+    const data = await res.json();
+
+    if (res.status === 401) {
+      loginWithGoogleForPoll();
+      return;
+    }
+
+    if (!res.ok || !data.ok) {
+      return showBox(resBox, `❌ ${data.error || "Could not load poll."}`, true);
+    }
+
+    currentChannelName = data.channelName;
+    document.getElementById("pvChannelName").textContent = `📢 ${data.channelName}`;
+    document.getElementById("pvOnlineBots").textContent = `🤖 ${data.availableSessions} Bots`;
+    document.getElementById("pvQuestion").textContent = `📊 ${data.question}`;
+
+    const listEl = document.getElementById("pvOptionsList");
+    listEl.innerHTML = "";
+    selectedOptIndex = 0;
+    selectedOptName = data.options[0]?.name || "Option 1";
+
+    data.options.forEach((opt, idx) => {
+      const div = document.createElement("div");
+      div.className = "poll-opt-item" + (idx === 0 ? " selected" : "");
+      div.innerHTML = `<span>${opt.name}</span><span class="poll-radio"></span>`;
+      div.onclick = () => {
+        document.querySelectorAll(".poll-opt-item").forEach(el => el.classList.remove("selected"));
+        div.classList.add("selected");
+        selectedOptIndex = opt.index;
+        selectedOptName = opt.name;
+      };
+      listEl.appendChild(div);
+    });
+
+    document.getElementById("pollVotesCount").max = Math.max(1, data.availableSessions);
+    document.getElementById("pollPreviewBox").classList.remove("hidden");
+    document.getElementById("pollVoteControls").classList.remove("hidden");
+    showBox(resBox, "✅ Poll loaded! Select an option & click Cast Poll Votes.", false);
+  } catch {
+    showBox(resBox, "❌ Network error loading poll.", true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Load Poll";
+  }
+}
+
+async function castPollVotes() {
+  const pollUrl = (document.getElementById("pollUrl").value || "").trim();
+  const votesCount = parseInt(document.getElementById("pollVotesCount").value || "1", 10);
+  const btn = document.getElementById("castVoteBtn");
+  const resBox = document.getElementById("pollResult");
+
+  btn.disabled = true;
+  btn.innerHTML = `${SPIN_ICON}<span>Starting Safe Boost...</span>`;
+
+  try {
+    const res = await fetch(`${API_BASE}/api/poll/vote`, {
+      method: "POST",
+      credentials: "include",
+      headers: getAuthHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({
+        pollUrl,
+        optionIndex: selectedOptIndex,
+        optionName: selectedOptName,
+        channelName: currentChannelName,
+        votesCount
+      })
+    });
+    const data = await res.json();
+
+    if (!res.ok || !data.ok) {
+      return showBox(resBox, `❌ ${data.error || "Failed to start votes."}`, true);
+    }
+
+    pollUser.coins = data.remainingCoins;
+    document.getElementById("navCoinVal").textContent = data.remainingCoins;
+    document.getElementById("pollBalText").textContent = `${data.remainingCoins} Coins`;
+
+    showBox(resBox, `✅ Started! Sending ${data.plannedVotes} votes for "${selectedOptName}".`, false);
+    launchEmojiBurst(["🗳️", "✅", "🔥"]);
+    document.getElementById("pollProgressBox").classList.remove("hidden");
+    trackPollJob(data.jobId);
+  } catch {
+    showBox(resBox, "❌ Server unreachable.", true);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<span>Cast Poll Votes Now</span>`;
+  }
+}
+
+function trackPollJob(jobId) {
+  if (pollJobTimer) clearInterval(pollJobTimer);
+  pollJobTimer = setInterval(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/poll/status/${encodeURIComponent(jobId)}`, {
+        credentials: "include",
+        headers: getAuthHeaders()
+      });
+      const data = await res.json();
+      if (!data.ok || !data.job) return;
+      const j = data.job;
+      const pct = j.totalPlanned > 0 ? Math.round((j.completed / j.totalPlanned) * 100) : 0;
+      document.getElementById("pollProgCount").textContent = `${j.completed} / ${j.totalPlanned}`;
+      document.getElementById("pollProgFill").style.width = `${pct}%`;
+      if (j.status === "completed") {
+        document.getElementById("pollProgStatus").textContent = "Completed ✅";
+        clearInterval(pollJobTimer);
+      }
+    } catch {}
+  }, 4000);
+}
+
 /* THEME & 3D CARD MOTION */
 (function(){
   function upd(t){document.querySelectorAll('[data-theme-btn]').forEach(b=>b.classList.toggle('active',b.dataset.themeBtn===t))}
@@ -938,74 +1374,23 @@ window.setMode=function(mode){
     void ss.offsetWidth;ss.classList.add('active');
   }
 };
-document.querySelectorAll('.auth-tab').forEach(b=>b.addEventListener('click',()=>window.setMode(b.dataset.mode)));
 
-// Run initial tab selection AFTER window.setMode is defined
-(function(){
-  const urlTab = new URLSearchParams(window.location.search).get("tab");
-  if (urlTab === "poll") {
-    window.setMode("poll");
-  } else if (urlTab === "weekly") {
-    window.setMode("weekly");
-  } else {
-    setTimeout(()=>{
-      const cm=document.getElementById('cardMotion'),ss=document.getElementById('sideSingle');
-      if(cm&&ss&&!cm.classList.contains('is-center')&&!cm.classList.contains('is-left')){
-        cm.classList.add('is-right');
-        ss.classList.add('active');
-      }
-    },1200);
-  }
-})();
+document.querySelectorAll('.auth-tab').forEach(b=>{
+  b.addEventListener('click',()=>window.setMode(b.dataset.mode));
+});
 
-function triggerPaneAnimations(pane){
-  if(!pane)return;
-  const items=pane.querySelectorAll('.pane-child');
-  items.forEach(el=>{el.style.animation='none';});
-  void pane.offsetWidth;
-  items.forEach(el=>{el.style.animation='';});
+// Initial mode on load
+if (cameFromGoogleLogin) {
+  window.setMode('poll');
+} else {
+  setTimeout(()=>{
+    const cm=document.getElementById('cardMotion'),ss=document.getElementById('sideSingle');
+    if(cm&&ss&&!cm.classList.contains('is-center')&&!cm.classList.contains('is-left')){
+      cm.classList.add('is-right');
+      ss.classList.add('active');
+    }
+  },1200);
 }
-
-window.setMode=function(mode){
-  const cm=document.getElementById('cardMotion');
-  const ss=document.getElementById('sideSingle');
-  const sw=document.getElementById('sideWeekly');
-  const spl=document.getElementById('sidePollLeft');
-  const spr=document.getElementById('sidePollRight');
-  const fs=document.getElementById('formStack'),tw=document.querySelector('.auth-tabs'),tb=document.querySelectorAll('.auth-tab');
-  const cur=fs.querySelector('.form-pane.active'),next=fs.querySelector('.form-pane[data-pane="'+mode+'"]');
-
-  if(next&&cur!==next){
-    fs.style.height=cur.offsetHeight+'px';void fs.offsetHeight;
-    cur.classList.remove('active');
-    next.classList.add('active');
-    triggerPaneAnimations(next);
-    fs.style.height=next.offsetHeight+'px';
-    setTimeout(()=>{fs.style.height='';},600);
-  }
-
-  tw.dataset.active=mode;
-  tb.forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));
-
-  cm.classList.remove('is-right','is-left','is-center');
-  ss.classList.remove('active');
-  sw.classList.remove('active');
-  spl.classList.remove('active');
-  spr.classList.remove('active');
-
-  if(mode==='weekly'){
-    cm.classList.add('is-left');
-    void sw.offsetWidth;sw.classList.add('active');
-  } else if(mode==='poll'){
-    cm.classList.add('is-center');
-    void spl.offsetWidth;spl.classList.add('active');
-    void spr.offsetWidth;spr.classList.add('active');
-  } else {
-    cm.classList.add('is-right');
-    void ss.offsetWidth;ss.classList.add('active');
-  }
-};
-document.querySelectorAll('.auth-tab').forEach(b=>b.addEventListener('click',()=>window.setMode(b.dataset.mode)));
 
 /* HORROR ENGINE */
 (function(){
