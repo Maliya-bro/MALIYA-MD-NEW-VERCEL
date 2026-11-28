@@ -109,14 +109,6 @@ button,input{font-family:inherit}
 .t-theme-btn:hover{background:rgba(99,102,241,.15);color:var(--t-accent)}
 .t-theme-btn.active{background:linear-gradient(135deg,var(--t-accent),var(--t-accent-2));color:#fff;box-shadow:0 4px 12px -4px rgba(99,102,241,.5)}
 
-.coin-nav-pill{
-  display:inline-flex;align-items:center;gap:6px;
-  font-size:12px;font-weight:800;color:#f59e0b;
-  background:rgba(245,158,11,.14);
-  border:1px solid rgba(245,158,11,.38);
-  border-radius:12px;padding:7px 12px;
-}
-
 .nav-link-btn{
   display:inline-flex;align-items:center;gap:5px;
   font-size:12px;font-weight:700;color:var(--t-txt-2);
@@ -161,7 +153,6 @@ button,input{font-family:inherit}
 @media(min-width:1024px){
   .card-motion.is-right{transform:translateX(23vw)}
   .card-motion.is-left{transform:translateX(-23vw)}
-  .card-motion.is-center{transform:translateX(0)}
 }
 .auth-card{
   position:relative;
@@ -185,23 +176,22 @@ button,input{font-family:inherit}
   color:#fff
 }
 
-/* TABS (3-Column) */
+/* TABS */
 .auth-tabs{
-  position:relative;display:grid;grid-template-columns:1fr 1fr 1fr;
+  position:relative;display:grid;grid-template-columns:1fr 1fr;
   background:var(--t-tab-bg);border-radius:13px;padding:4px;margin-bottom:20px
 }
 .auth-tab-pill{
   position:absolute;top:4px;left:4px;
-  width:calc(33.333% - 3px);height:calc(100% - 8px);
+  width:calc(50% - 4px);height:calc(100% - 8px);
   background:var(--t-tab-active);border-radius:10px;
   box-shadow:0 2px 8px -2px rgba(15,23,42,.18);
   transition:transform .38s cubic-bezier(.16,1,.3,1);pointer-events:none
 }
 .auth-tabs[data-active="qr"] .auth-tab-pill{transform:translateX(100%)}
-.auth-tabs[data-active="poll"] .auth-tab-pill{transform:translateX(200%)}
 .auth-tab{
-  position:relative;z-index:1;padding:9px 4px;
-  font-size:12.5px;font-weight:700;color:var(--t-txt-3);
+  position:relative;z-index:1;padding:9px;
+  font-size:13px;font-weight:700;color:var(--t-txt-3);
   border-radius:10px;transition:color .3s;cursor:pointer;background:none;border:none
 }
 .auth-tab.active{color:var(--t-txt)}
@@ -247,16 +237,6 @@ button,input{font-family:inherit}
 .btn-primary:hover:not(:disabled){transform:translateY(-1.5px);box-shadow:0 20px 34px -14px rgba(99,102,241,.85)}
 .btn-primary:disabled{opacity:.65;cursor:wait}
 
-.google-btn{
-  width:100%;padding:13px;border-radius:13px;
-  border:1.5px solid var(--t-border);background:var(--t-card-solid);
-  color:var(--t-txt);font-weight:800;font-size:13.5px;
-  display:flex;align-items:center;justify-content:center;gap:10px;
-  cursor:pointer;box-shadow:0 10px 25px -10px rgba(0,0,0,.15);
-  transition:transform .2s,border-color .2s
-}
-.google-btn:hover{transform:translateY(-2px);border-color:var(--t-accent)}
-
 .result-box{
   margin-top:14px;background:var(--t-input);
   border:1.5px dashed var(--t-input-border);
@@ -275,32 +255,6 @@ button,input{font-family:inherit}
   transition:all .2s
 }
 .copy-btn:hover{background:rgba(99,102,241,.1)}
-
-/* POLL PREVIEW & OPTIONS */
-.poll-preview-box{
-  background:var(--t-input);border:1.5px solid var(--t-border);
-  border-radius:16px;padding:13px;margin-bottom:12px
-}
-.poll-meta-row{display:flex;justify-content:space-between;font-size:11px;font-weight:800;color:var(--t-accent);margin-bottom:6px}
-.poll-q-text{font-size:13.5px;font-weight:800;margin-bottom:9px;color:var(--t-txt)}
-.poll-opt-item{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:9px 12px;margin-bottom:6px;border-radius:10px;
-  border:1.5px solid var(--t-input-border);background:var(--t-card-solid);
-  cursor:pointer;font-size:12.5px;font-weight:700;transition:all .15s
-}
-.poll-opt-item:hover{border-color:var(--t-accent)}
-.poll-opt-item.selected{border-color:var(--t-accent);background:rgba(99,102,241,.14)}
-.poll-radio{width:16px;height:16px;border-radius:50%;border:2px solid var(--t-txt-4);display:flex;align-items:center;justify-content:center}
-.poll-opt-item.selected .poll-radio{border-color:var(--t-accent)}
-.poll-opt-item.selected .poll-radio::after{content:'';width:8px;height:8px;border-radius:50%;background:var(--t-accent)}
-
-.poll-progress-wrap{
-  margin-top:10px;background:var(--t-input);border:1px solid var(--t-border);
-  border-radius:12px;padding:11px;text-align:left
-}
-.poll-bar-bg{width:100%;height:7px;background:rgba(99,102,241,.15);border-radius:999px;overflow:hidden;margin:7px 0}
-.poll-bar-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--t-accent),#10b981);transition:width .5s}
 
 /* QR BOX + SCANNER */
 .qr-wrap{
@@ -337,12 +291,8 @@ button,input{font-family:inherit}
 @media(min-width:1024px){.side-panel{display:flex}}
 .side-panel.side-left{left:0;justify-content:flex-end}
 .side-panel.side-right{right:0;justify-content:flex-start}
-.side-panel.dual-left{left:0;width:calc(50% - 245px);justify-content:flex-end;padding-right:24px}
-.side-panel.dual-right{right:0;width:calc(50% - 245px);justify-content:flex-start;padding-left:24px}
 .side-panel.active{pointer-events:auto}
 .side-inner{width:100%;max-width:410px;display:flex;flex-direction:column;gap:20px;position:relative;z-index:1}
-.side-panel.dual-left .side-inner,.side-panel.dual-right .side-inner{max-width:340px}
-
 .side-panel .stagger-child{opacity:0;transform:translateY(28px) scale(.97);transition:opacity .65s cubic-bezier(.16,1,.3,1),transform .65s cubic-bezier(.16,1,.3,1)}
 .side-panel.active .stagger-child{opacity:1;transform:translateY(0) scale(1);transition-delay:var(--delay,0s)}
 .side-particles{position:absolute;inset:0;pointer-events:none;overflow:hidden}
@@ -356,7 +306,6 @@ button,input{font-family:inherit}
   animation:badgePulse 3s ease-in-out infinite
 }
 .side-greeting h1{font-size:38px;line-height:1.1;font-weight:800;letter-spacing:-0.025em;color:var(--t-txt);margin-top:14px}
-.side-panel.dual-left .side-greeting h1,.side-panel.dual-right .side-greeting h1{font-size:32px}
 .side-greeting h1 span{
   background:linear-gradient(120deg,#6366f1,#8b5cf6,#ec4899,#6366f1);
   background-size:300% auto;-webkit-background-clip:text;background-clip:text;color:transparent;
@@ -489,9 +438,6 @@ html.bw-active #ban-wall{display:flex !important}
   </a>
 
   <div class="nav-actions">
-    <div id="navCoinPill" class="coin-nav-pill hidden">🪙 <span id="navCoinVal">0</span> Coins</div>
-    <a href="profile.html" id="navProfileLink" class="nav-link-btn hidden">👤 Profile</a>
-
     <div class="theme-switch">
       <button type="button" data-theme-btn="white" class="t-theme-btn" title="White theme">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M6.3 17.7l-1.4 1.4M19.1 4.9l-1.4 1.4"/></svg>
@@ -560,39 +506,6 @@ html.bw-active #ban-wall{display:flex !important}
   </div>
 </div>
 
-<!-- DUAL LEFT PANEL FOR POLL VOTES (CENTER CARD MODE) -->
-<div id="sidePollLeft" class="side-panel dual-left">
-  <div class="side-inner">
-    <div class="stagger-child side-greeting" style="--delay:0s">
-      <span class="badge"><span class="live-dot"></span>Google Protected · Coin System</span>
-      <h1>Channel<br><span>Poll Votes</span></h1>
-      <p>Sign in with Google to receive <strong>50 Free Coins</strong> instantly. Each real multi-device vote costs <strong>25 Coins</strong>.</p>
-    </div>
-    <div class="stagger-child stats-row" style="--delay:.2s">
-      <div class="stat-item"><strong>50 🪙</strong><span>Free Bonus</span></div>
-      <div class="stat-item"><strong>25 🪙</strong><span>Per Vote</span></div>
-      <div class="stat-item"><strong>0%</strong><span>Follow Req</span></div>
-    </div>
-  </div>
-</div>
-
-<!-- DUAL RIGHT PANEL FOR POLL VOTES (CENTER CARD MODE) -->
-<div id="sidePollRight" class="side-panel dual-right">
-  <div class="side-inner">
-    <div class="stagger-child side-greeting" style="--delay:0s">
-      <span class="badge"><span class="purple-dot"></span>Anti-Ban · 4-Minute Delivery</span>
-      <h1>Safe Multi-Bot<br><span>Vote Cluster</span></h1>
-      <p>Votes are staggered gradually across 4 minutes with randomized delays so bot accounts stay 100% safe.</p>
-    </div>
-    <ul class="stagger-child benefit-list" style="--delay:.2s">
-      <li><span class="check">✓</span>No channel follow required</li>
-      <li><span class="check">✓</span>Live poll question &amp; option preview</li>
-      <li><span class="check">✓</span>Combines MALIYA-MD + Partner bots</li>
-      <li><span class="check">✓</span>Automatic coin refund on any error</li>
-    </ul>
-  </div>
-</div>
-
 <!-- CENTER CARD STAGE -->
 <div class="card-stage">
   <div id="cardMotion" class="card-motion">
@@ -608,7 +521,6 @@ html.bw-active #ban-wall{display:flex !important}
         <span class="auth-tab-pill"></span>
         <button type="button" class="auth-tab active" data-mode="pair">Pair Code</button>
         <button type="button" class="auth-tab" data-mode="qr">QR Code</button>
-        <button type="button" class="auth-tab" data-mode="poll">Poll Votes</button>
       </div>
 
       <div id="formStack" class="form-stack">
@@ -663,80 +575,6 @@ html.bw-active #ban-wall{display:flex !important}
             </div>
 
             <div id="qrConsole" class="console-box hidden"></div>
-          </div>
-        </div>
-
-        <!-- PANE 3: CHANNEL POLL VOTES -->
-        <div class="form-pane" data-pane="poll">
-          <h2 class="pane-title pane-child" style="--d:.35s">Channel Poll Booster</h2>
-          <p class="pane-sub pane-child" style="--d:.45s">25 Coins per Vote · Safe 4-Minute Delivery</p>
-
-          <div id="pollAuthLoading" style="text-align:center;padding:22px 0;font-size:13px;font-weight:700;color:var(--t-txt-3)">
-            Verifying Google Session...
-          </div>
-
-          <div id="pollLoginGate" class="hidden" style="text-align:center;padding:8px 0">
-            <div style="background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.35);color:#10b981;border-radius:12px;padding:10px;font-size:12px;font-weight:800;margin-bottom:14px">
-              🎁 New Google Sign-Ins get 50 FREE Coins (2 Free Votes)!
-            </div>
-            <button type="button" onclick="loginWithGoogleForPoll()" class="google-btn">
-              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="19" height="19" alt="Google">
-              <span>Continue with Google to Vote</span>
-            </button>
-          </div>
-
-          <div id="pollAppBox" class="hidden">
-            <div class="form-group">
-              <label class="field-label" for="pollUrl">1. Channel Poll Message Link</label>
-              <div style="display:flex;gap:7px">
-                <input type="url" id="pollUrl" class="input" placeholder="https://whatsapp.com/channel/0029Va.../123">
-                <button type="button" id="loadPollBtn" onclick="loadPollPreview()" style="padding:0 14px;border-radius:12px;border:none;background:var(--t-accent);color:#fff;font-weight:800;font-size:12px;cursor:pointer;white-space:nowrap">
-                  Load Poll
-                </button>
-              </div>
-            </div>
-
-            <div id="pollPreviewBox" class="poll-preview-box hidden">
-              <div class="poll-meta-row">
-                <span id="pvChannelName">📢 Channel</span>
-                <span id="pvOnlineBots">🤖 0 Ready</span>
-              </div>
-              <div id="pvQuestion" class="poll-q-text">Poll Question</div>
-              <div id="pvOptionsList"></div>
-            </div>
-
-            <div id="pollVoteControls" class="hidden">
-              <div class="form-group">
-                <label class="field-label" for="pollVotesCount">2. Votes Count (25 Coins each)</label>
-                <input type="number" id="pollVotesCount" class="input" min="1" max="50" value="2" oninput="updatePollCost()">
-              </div>
-
-              <div style="display:flex;justify-content:space-between;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.25);padding:9px 12px;border-radius:11px;font-size:12px;font-weight:800;margin-bottom:12px">
-                <span>Cost: <span id="pollCostText" style="color:var(--t-accent)">50 Coins</span></span>
-                <span>Balance: <span id="pollBalText" style="color:#f59e0b">0 Coins</span></span>
-              </div>
-
-              <button type="button" id="castVoteBtn" onclick="castPollVotes()" class="btn-primary">
-                <span>Cast Poll Votes Now</span>
-              </button>
-            </div>
-
-            <div id="pollResult" class="result-box">
-              Paste your poll message link &amp; click Load Poll
-            </div>
-
-            <div id="pollProgressBox" class="poll-progress-wrap hidden">
-              <div style="display:flex;justify-content:space-between;font-size:11.5px;font-weight:800">
-                <span id="pollProgStatus" style="color:var(--t-accent)">Delivering votes...</span>
-                <span id="pollProgCount">0 / 0</span>
-              </div>
-              <div class="poll-bar-bg">
-                <div id="pollProgFill" class="poll-bar-fill"></div>
-              </div>
-              <div style="font-size:10.5px;color:var(--t-txt-3)">
-                🛡️ Staggered over 4 mins · Zero channel follow
-              </div>
-            </div>
           </div>
         </div>
 
@@ -952,180 +790,6 @@ async function generateQR() {
   }
 }
 
-/* ==================== GOOGLE AUTH & CHANNEL POLL LOGIC ==================== */
-let pollUser = null;
-let selectedOptIndex = 0;
-let selectedOptName = "Option 1";
-let currentChannelName = "WhatsApp Channel";
-let pollJobTimer = null;
-
-function loginWithGoogleForPoll() {
-  const url = new URL(window.location.href);
-  url.searchParams.set("tab", "poll");
-  window.location.href = `${API_BASE}/auth/google?redirect=${encodeURIComponent(url.toString())}`;
-}
-
-async function initPollUserSession() {
-  try {
-    const res = await fetch(`${API_BASE}/api/poll/me`, { credentials: "include" });
-    const data = await res.json();
-    document.getElementById("pollAuthLoading").classList.add("hidden");
-
-    if (!res.ok || !data.ok) {
-      document.getElementById("pollLoginGate").classList.remove("hidden");
-      return;
-    }
-
-    pollUser = data.user;
-    document.getElementById("pollLoginGate").classList.add("hidden");
-    document.getElementById("pollAppBox").classList.remove("hidden");
-    document.getElementById("navCoinPill").classList.remove("hidden");
-    document.getElementById("navProfileLink").classList.remove("hidden");
-    document.getElementById("navCoinVal").textContent = pollUser.coins;
-    document.getElementById("pollBalText").textContent = `${pollUser.coins} Coins`;
-    updatePollCost();
-  } catch {
-    document.getElementById("pollAuthLoading").classList.add("hidden");
-    document.getElementById("pollLoginGate").classList.remove("hidden");
-  }
-}
-
-function updatePollCost() {
-  const n = Math.max(1, parseInt(document.getElementById("pollVotesCount").value || "1", 10));
-  document.getElementById("pollCostText").textContent = `${n * 25} Coins`;
-}
-
-async function loadPollPreview() {
-  const pollUrl = (document.getElementById("pollUrl").value || "").trim();
-  const btn = document.getElementById("loadPollBtn");
-  const resBox = document.getElementById("pollResult");
-
-  if (!/^https:\/\/(www\.)?whatsapp\.com\/channel\/[A-Za-z0-9_-]+\/\d+/.test(pollUrl)) {
-    resBox.innerHTML = `<span style="color:#f43f5e;font-weight:700">Paste a valid poll message link (e.g. .../channel/CODE/123)</span>`;
-    return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = "Loading...";
-  resBox.innerHTML = `<span>Fetching poll options from WhatsApp...</span>`;
-
-  try {
-    const res = await fetch(`${API_BASE}/api/poll/preview`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ pollUrl })
-    });
-    const data = await res.json();
-
-    if (res.status === 401) {
-      loginWithGoogleForPoll();
-      return;
-    }
-
-    if (!res.ok || !data.ok) {
-      resBox.innerHTML = `<span style="color:#f43f5e;font-weight:700">${data.error || "Could not load poll."}</span>`;
-      return;
-    }
-
-    currentChannelName = data.channelName;
-    document.getElementById("pvChannelName").textContent = `📢 ${data.channelName}`;
-    document.getElementById("pvOnlineBots").textContent = `🤖 ${data.availableSessions} Bots`;
-    document.getElementById("pvQuestion").textContent = `📊 ${data.question}`;
-
-    const listEl = document.getElementById("pvOptionsList");
-    listEl.innerHTML = "";
-    selectedOptIndex = 0;
-    selectedOptName = data.options[0]?.name || "Option 1";
-
-    data.options.forEach((opt, idx) => {
-      const div = document.createElement("div");
-      div.className = "poll-opt-item" + (idx === 0 ? " selected" : "");
-      div.innerHTML = `<span>${opt.name}</span><span class="poll-radio"></span>`;
-      div.onclick = () => {
-        document.querySelectorAll(".poll-opt-item").forEach(el => el.classList.remove("selected"));
-        div.classList.add("selected");
-        selectedOptIndex = opt.index;
-        selectedOptName = opt.name;
-      };
-      listEl.appendChild(div);
-    });
-
-    document.getElementById("pollVotesCount").max = Math.max(1, data.availableSessions);
-    document.getElementById("pollPreviewBox").classList.remove("hidden");
-    document.getElementById("pollVoteControls").classList.remove("hidden");
-    resBox.innerHTML = `<span style="color:#10b981;font-weight:700">Poll loaded! Select an option &amp; click Cast Poll Votes.</span>`;
-  } catch {
-    resBox.innerHTML = `<span style="color:#f43f5e;font-weight:700">Network error loading poll.</span>`;
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "Load Poll";
-  }
-}
-
-async function castPollVotes() {
-  const pollUrl = (document.getElementById("pollUrl").value || "").trim();
-  const votesCount = parseInt(document.getElementById("pollVotesCount").value || "1", 10);
-  const btn = document.getElementById("castVoteBtn");
-  const resBox = document.getElementById("pollResult");
-
-  btn.disabled = true;
-  btn.innerHTML = `${SPIN_SVG}<span>Starting Safe Boost...</span>`;
-
-  try {
-    const res = await fetch(`${API_BASE}/api/poll/vote`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        pollUrl,
-        optionIndex: selectedOptIndex,
-        optionName: selectedOptName,
-        channelName: currentChannelName,
-        votesCount
-      })
-    });
-    const data = await res.json();
-
-    if (!res.ok || !data.ok) {
-      resBox.innerHTML = `<span style="color:#f43f5e;font-weight:700">${data.error || "Failed to start votes."}</span>`;
-      return;
-    }
-
-    pollUser.coins = data.remainingCoins;
-    document.getElementById("navCoinVal").textContent = data.remainingCoins;
-    document.getElementById("pollBalText").textContent = `${data.remainingCoins} Coins`;
-
-    resBox.innerHTML = `<span style="color:#10b981;font-weight:700">Started! Sending ${data.plannedVotes} votes for "${selectedOptName}".</span>`;
-    document.getElementById("pollProgressBox").classList.remove("hidden");
-    trackPollJob(data.jobId);
-  } catch {
-    resBox.innerHTML = `<span style="color:#f43f5e;font-weight:700">Server unreachable.</span>`;
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = `<span>Cast Poll Votes Now</span>`;
-  }
-}
-
-function trackPollJob(jobId) {
-  if (pollJobTimer) clearInterval(pollJobTimer);
-  pollJobTimer = setInterval(async () => {
-    try {
-      const res = await fetch(`${API_BASE}/api/poll/status/${encodeURIComponent(jobId)}`, { credentials: "include" });
-      const data = await res.json();
-      if (!data.ok || !data.job) return;
-      const j = data.job;
-      const pct = j.totalPlanned > 0 ? Math.round((j.completed / j.totalPlanned) * 100) : 0;
-      document.getElementById("pollProgCount").textContent = `${j.completed} / ${j.totalPlanned}`;
-      document.getElementById("pollProgFill").style.width = `${pct}%`;
-      if (j.status === "completed") {
-        document.getElementById("pollProgStatus").textContent = "Completed ✅";
-        clearInterval(pollJobTimer);
-      }
-    } catch {}
-  }, 4000);
-}
-
 /* SIDE PARTICLES & 3D CARD SLIDE */
 (function(){
   ['particlesPair','particlesQr'].forEach(id=>{
@@ -1139,15 +803,10 @@ function trackPollJob(jobId) {
     }
   });
 
-  const urlTab = new URLSearchParams(window.location.search).get("tab");
-  if (urlTab === "poll") {
-    window.setMode("poll");
-  } else {
-    setTimeout(()=>{
-      const cm=document.getElementById('cardMotion'),sp=document.getElementById('sidePair');
-      if(cm&&sp&&!cm.classList.contains('is-center')){cm.classList.add('is-right');sp.classList.add('active');}
-    },1200);
-  }
+  setTimeout(()=>{
+    const cm=document.getElementById('cardMotion'),sp=document.getElementById('sidePair');
+    if(cm&&sp){cm.classList.add('is-right');sp.classList.add('active');}
+  },1200);
 })();
 
 function triggerPaneAnimations(pane){
@@ -1159,11 +818,7 @@ function triggerPaneAnimations(pane){
 }
 
 window.setMode=function(mode){
-  const cm=document.getElementById('cardMotion');
-  const sp=document.getElementById('sidePair');
-  const sq=document.getElementById('sideQr');
-  const spl=document.getElementById('sidePollLeft');
-  const spr=document.getElementById('sidePollRight');
+  const cm=document.getElementById('cardMotion'),sp=document.getElementById('sidePair'),sq=document.getElementById('sideQr');
   const fs=document.getElementById('formStack'),tw=document.querySelector('.auth-tabs'),tb=document.querySelectorAll('.auth-tab');
   const cur=fs.querySelector('.form-pane.active'),next=fs.querySelector('.form-pane[data-pane="'+mode+'"]');
   if(next&&cur!==next){
@@ -1176,23 +831,14 @@ window.setMode=function(mode){
   }
   tw.dataset.active=mode;
   tb.forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));
-
-  cm.classList.remove('is-right','is-left','is-center');
-  sp.classList.remove('active');
-  sq.classList.remove('active');
-  spl.classList.remove('active');
-  spr.classList.remove('active');
-
   if(mode==='qr'){
-    cm.classList.add('is-left');
-    void sq.offsetWidth;sq.classList.add('active');
-  } else if(mode==='poll'){
-    cm.classList.add('is-center');
-    void spl.offsetWidth;spl.classList.add('active');
-    void spr.offsetWidth;spr.classList.add('active');
+    cm.classList.remove('is-right');cm.classList.add('is-left');
+    sp.classList.remove('active');
+    sq.classList.remove('active');void sq.offsetWidth;sq.classList.add('active');
   } else {
-    cm.classList.add('is-right');
-    void sp.offsetWidth;sp.classList.add('active');
+    cm.classList.remove('is-left');cm.classList.add('is-right');
+    sq.classList.remove('active');
+    sp.classList.remove('active');void sp.offsetWidth;sp.classList.add('active');
   }
 };
 document.querySelectorAll('.auth-tab').forEach(b=>b.addEventListener('click',()=>window.setMode(b.dataset.mode)));
@@ -1236,8 +882,6 @@ document.querySelectorAll('.auth-tab').forEach(b=>b.addEventListener('click',()=
   window.addEventListener('resize',()=>{if(running)resize()});
   sync();
 })();
-
-initPollUserSession();
 </script>
 </body>
 </html>
